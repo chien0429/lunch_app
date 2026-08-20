@@ -189,15 +189,9 @@ RESTAURANT_MENUS = {
     }
 }
 
-# 注入隔空火球與冰錐射擊對決 CSS
+# 注入動態對撞彈道 CSS
 st.markdown("""
 <style>
-/* 容器定位 */
-.battle-wrapper {
-    position: relative;
-    width: 100%;
-}
-
 /* 1. 俊丞常態：烈焰燃燒字體 */
 @keyframes flameTextGlow {
     0% {
@@ -244,108 +238,169 @@ st.markdown("""
     animation: iceTextGlow 1.4s infinite alternate ease-in-out;
 }
 
-/* 3. 隔空射擊對轟：火球彈道 (發射向右下/右上) */
-@keyframes shootFireball {
+/* 火球彈道：向下發射 (Shooting DOWN) */
+@keyframes shootFireDown {
     0% {
         opacity: 0;
-        transform: translate(0, 0) scale(0.4) rotate(0deg);
-        box-shadow: 0 0 0 rgba(255, 69, 0, 0);
+        transform: translate(25px, 0px) scale(0.4);
     }
     20% {
         opacity: 1;
-        transform: translate(30px, 15px) scale(1) rotate(45deg);
+        transform: translate(25px, 15px) scale(1);
         box-shadow: 0 0 15px #ff4500, 0 0 25px #ffcc00;
     }
-    80% {
+    85% {
         opacity: 1;
-        transform: translate(140px, 50px) scale(1.2) rotate(180deg);
-        box-shadow: 0 0 20px #ff2200, 0 0 35px #ffff00;
+        transform: translate(25px, 50px) scale(1.3);
+        box-shadow: 0 0 25px #ff2200, 0 0 35px #ffff00;
     }
     95% {
         opacity: 1;
-        transform: translate(175px, 60px) scale(1.8) rotate(270deg);
+        transform: translate(25px, 60px) scale(1.8);
         box-shadow: 0 0 35px #ffffff, 0 0 50px #ff0000;
     }
     100% {
         opacity: 0;
-        transform: translate(185px, 62px) scale(2.2);
-        box-shadow: 0 0 40px rgba(255, 255, 255, 0);
+        transform: translate(25px, 65px) scale(2.2);
     }
 }
-
-.fireball-missile {
+.fire-down {
     position: absolute;
     top: 50%;
-    right: -25px;
+    left: 50%;
     width: 18px;
     height: 18px;
     border-radius: 50%;
     background: radial-gradient(circle, #ffffff 10%, #ffee55 35%, #ff4500 70%, #990000 100%);
     pointer-events: none;
-    animation: shootFireball 1.8s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    animation: shootFireDown 1.5s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
     z-index: 999;
 }
 
-/* 4. 隔空射擊對轟：冰錐彈道 (發射向左上/左下) */
-@keyframes shootIceShard {
+/* 火球彈道：向上發射 (Shooting UP) */
+@keyframes shootFireUp {
     0% {
         opacity: 0;
-        transform: translate(0, 0) scale(0.4) rotate(0deg);
-        box-shadow: 0 0 0 rgba(0, 229, 255, 0);
+        transform: translate(25px, 0px) scale(0.4);
     }
     20% {
         opacity: 1;
-        transform: translate(-30px, -15px) scale(1) rotate(-45deg);
-        box-shadow: 0 0 15px #00e5ff, 0 0 25px #80d8ff;
+        transform: translate(25px, -15px) scale(1);
+        box-shadow: 0 0 15px #ff4500, 0 0 25px #ffcc00;
     }
-    80% {
+    85% {
         opacity: 1;
-        transform: translate(-140px, -50px) scale(1.2) rotate(-180deg);
-        box-shadow: 0 0 20px #00b0ff, 0 0 35px #ffffff;
+        transform: translate(25px, -50px) scale(1.3);
+        box-shadow: 0 0 25px #ff2200, 0 0 35px #ffff00;
     }
     95% {
         opacity: 1;
-        transform: translate(-175px, -60px) scale(1.8) rotate(-270deg);
+        transform: translate(25px, -60px) scale(1.8);
+        box-shadow: 0 0 35px #ffffff, 0 0 50px #ff0000;
+    }
+    100% {
+        opacity: 0;
+        transform: translate(25px, -65px) scale(2.2);
+    }
+}
+.fire-up {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #ffffff 10%, #ffee55 35%, #ff4500 70%, #990000 100%);
+    pointer-events: none;
+    animation: shootFireUp 1.5s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    z-index: 999;
+}
+
+/* 冰錐彈道：向下發射 (Shooting DOWN) */
+@keyframes shootIceDown {
+    0% {
+        opacity: 0;
+        transform: translate(25px, 0px) scale(0.4);
+    }
+    20% {
+        opacity: 1;
+        transform: translate(25px, 15px) scale(1);
+        box-shadow: 0 0 15px #00e5ff, 0 0 25px #80d8ff;
+    }
+    85% {
+        opacity: 1;
+        transform: translate(25px, 50px) scale(1.3);
+        box-shadow: 0 0 25px #00b0ff, 0 0 35px #ffffff;
+    }
+    95% {
+        opacity: 1;
+        transform: translate(25px, 60px) scale(1.8);
         box-shadow: 0 0 35px #ffffff, 0 0 50px #00e5ff;
     }
     100% {
         opacity: 0;
-        transform: translate(-185px, -62px) scale(2.2);
-        box-shadow: 0 0 40px rgba(255, 255, 255, 0);
+        transform: translate(25px, 65px) scale(2.2);
     }
 }
-
-.ice-shard-missile {
+.ice-down {
     position: absolute;
     top: 50%;
-    left: -25px;
+    left: 50%;
     width: 18px;
     height: 18px;
     border-radius: 20% 80% 20% 80%;
     background: radial-gradient(circle, #ffffff 15%, #b3e5fc 40%, #00b0ff 75%, #01579b 100%);
     pointer-events: none;
-    animation: shootIceShard 1.8s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    animation: shootIceDown 1.5s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
     z-index: 999;
 }
 
-/* 5. 碰撞炸裂衝擊光環 */
-@keyframes clashExplosion {
-    0%, 75% {
+/* 冰錐彈道：向上發射 (Shooting UP) */
+@keyframes shootIceUp {
+    0% {
         opacity: 0;
-        transform: scale(0.3);
+        transform: translate(25px, 0px) scale(0.4);
+    }
+    20% {
+        opacity: 1;
+        transform: translate(25px, -15px) scale(1);
+        box-shadow: 0 0 15px #00e5ff, 0 0 25px #80d8ff;
     }
     85% {
         opacity: 1;
-        transform: scale(1.4);
-        box-shadow: 0 0 25px #ffffff, 0 0 40px #ff3300, 0 0 40px #00e5ff;
+        transform: translate(25px, -50px) scale(1.3);
+        box-shadow: 0 0 25px #00b0ff, 0 0 35px #ffffff;
+    }
+    95% {
+        opacity: 1;
+        transform: translate(25px, -60px) scale(1.8);
+        box-shadow: 0 0 35px #ffffff, 0 0 50px #00e5ff;
     }
     100% {
         opacity: 0;
-        transform: scale(2.2);
-        box-shadow: 0 0 50px rgba(255,255,255,0);
+        transform: translate(25px, -65px) scale(2.2);
     }
 }
-.impact-explosion {
+.ice-up {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 18px;
+    height: 18px;
+    border-radius: 20% 80% 20% 80%;
+    background: radial-gradient(circle, #ffffff 15%, #b3e5fc 40%, #00b0ff 75%, #01579b 100%);
+    pointer-events: none;
+    animation: shootIceUp 1.5s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    z-index: 999;
+}
+
+/* 碰撞爆炸點衝擊波 (Impact Explosion) */
+@keyframes explodeDown {
+    0%, 75% { opacity: 0; transform: translate(25px, 60px) scale(0.2); }
+    85% { opacity: 1; transform: translate(25px, 60px) scale(1.5); box-shadow: 0 0 25px #ffffff, 0 0 40px #ff3300, 0 0 40px #00e5ff; }
+    100% { opacity: 0; transform: translate(25px, 60px) scale(2.3); }
+}
+.explosion-down {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -354,7 +409,25 @@ st.markdown("""
     border-radius: 50%;
     background: radial-gradient(circle, #ffffff 20%, #ffff77 40%, #ff4500 70%, #00e5ff 100%);
     pointer-events: none;
-    animation: clashExplosion 1.8s infinite ease-out;
+    animation: explodeDown 1.5s infinite ease-out;
+    z-index: 1000;
+}
+
+@keyframes explodeUp {
+    0%, 75% { opacity: 0; transform: translate(25px, -60px) scale(0.2); }
+    85% { opacity: 1; transform: translate(25px, -60px) scale(1.5); box-shadow: 0 0 25px #ffffff, 0 0 40px #ff3300, 0 0 40px #00e5ff; }
+    100% { opacity: 0; transform: translate(25px, -60px) scale(2.3); }
+}
+.explosion-up {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #ffffff 20%, #ffff77 40%, #ff4500 70%, #00e5ff 100%);
+    pointer-events: none;
+    animation: explodeUp 1.5s infinite ease-out;
     z-index: 1000;
 }
 
@@ -436,11 +509,6 @@ st.subheader("📊 目前點餐狀況與統計")
 orders_df = load_orders()
 
 if not orders_df.empty:
-    # 判斷是否兩人都已點餐（觸發隔空射擊）
-    has_chen = any("俊丞" in str(name) for name in orders_df["姓名"])
-    has_yeh = any("臨恩" in str(name) for name in orders_df["姓名"])
-    is_clashing = has_chen and has_yeh
-
     total_qty = len(orders_df)
     total_amount = orders_df["金額"].sum()
     col1, col2 = st.columns(2)
@@ -452,39 +520,75 @@ if not orders_df.empty:
     summary_df = orders_df.groupby(["店家", "餐點"]).size().reset_index(name="數量")
     st.table(summary_df)
 
-    # 格式化人名函數（隔空丟火球 vs 射冰錐）
-    def render_name(name):
-        name_str = str(name)
-        if "俊丞" in name_str:
-            if is_clashing:
-                # 隔空發射火球 + 碰撞爆炸
-                return f'<span class="flame-name">{name_str}<span class="fireball-missile"></span><span class="impact-explosion"></span></span>'
-            return f'<span class="flame-name">{name_str}</span>'
-        elif "臨恩" in name_str:
-            if is_clashing:
-                # 隔空發射冰錐
-                return f'<span class="ice-name">{name_str}<span class="ice-shard-missile"></span></span>'
-            return f'<span class="ice-name">{name_str}</span>'
-        return name_str
-
     # 2. 依人名統計每人應付金額
     st.markdown("**【每人應收金額】**")
     person_df = orders_df.groupby("姓名")["金額"].sum().reset_index(name="應付金額")
     
-    person_html = '<div class="battle-wrapper"><table class="custom-table"><thead><tr><th>姓名</th><th>應付金額</th></tr></thead><tbody>'
-    for _, row in person_df.iterrows():
-        name_html = render_name(row["姓名"])
-        person_html += f'<tr><td>{name_html}</td><td>${row["應付金額"]} 元</td></tr>'
-    person_html += '</tbody></table></div>'
+    # 動態計算人名表中的上下位置
+    p_names = person_df["姓名"].tolist()
+    p_chen_idx = next((i for i, n in enumerate(p_names) if "俊丞" in str(n)), None)
+    p_yeh_idx = next((i for i, n in enumerate(p_names) if "臨恩" in str(n)), None)
+    
+    person_html = '<table class="custom-table"><thead><tr><th>姓名</th><th>應付金額</th></tr></thead><tbody>'
+    for idx, row in person_df.iterrows():
+        name_str = str(row["姓名"])
+        if "俊丞" in name_str:
+            if p_chen_idx is not None and p_yeh_idx is not None:
+                if p_chen_idx < p_yeh_idx:
+                    # 俊丞在上：火球向下射擊 + 中央爆炸
+                    name_display = f'<span class="flame-name">{name_str}<span class="fire-down"></span><span class="explosion-down"></span></span>'
+                else:
+                    # 俊丞在下：火球向上射擊 + 中央爆炸
+                    name_display = f'<span class="flame-name">{name_str}<span class="fire-up"></span><span class="explosion-up"></span></span>'
+            else:
+                name_display = f'<span class="flame-name">{name_str}</span>'
+        elif "臨恩" in name_str:
+            if p_chen_idx is not None and p_yeh_idx is not None:
+                if p_yeh_idx < p_chen_idx:
+                    # 臨恩在上：冰錐向下射擊
+                    name_display = f'<span class="ice-name">{name_str}<span class="ice-down"></span></span>'
+                else:
+                    # 臨恩在下：冰錐向上射擊
+                    name_display = f'<span class="ice-name">{name_str}<span class="ice-up"></span></span>'
+            else:
+                name_display = f'<span class="ice-name">{name_str}</span>'
+        else:
+            name_display = name_str
+        
+        person_html += f'<tr><td>{name_display}</td><td>${row["應付金額"]} 元</td></tr>'
+    person_html += '</tbody></table>'
     st.markdown(person_html, unsafe_allow_html=True)
 
     # 3. 詳細點餐名冊
     st.markdown("**【詳細點餐名冊】**")
-    detail_html = '<div class="battle-wrapper"><table class="custom-table"><thead><tr><th>店家</th><th>姓名</th><th>餐點</th><th>金額</th><th>備註</th></tr></thead><tbody>'
-    for _, row in orders_df.iterrows():
-        name_html = render_name(row["姓名"])
-        detail_html += f'<tr><td>{row["店家"]}</td><td>{name_html}</td><td>{row["餐點"]}</td><td>${row["金額"]}</td><td>{row["備註"]}</td></tr>'
-    detail_html += '</tbody></table></div>'
+    d_names = orders_df["姓名"].tolist()
+    d_chen_idx = next((i for i, n in enumerate(d_names) if "俊丞" in str(n)), None)
+    d_yeh_idx = next((i for i, n in enumerate(d_names) if "臨恩" in str(n)), None)
+
+    detail_html = '<table class="custom-table"><thead><tr><th>店家</th><th>姓名</th><th>餐點</th><th>金額</th><th>備註</th></tr></thead><tbody>'
+    for idx, row in orders_df.iterrows():
+        name_str = str(row["姓名"])
+        if "俊丞" in name_str:
+            if d_chen_idx is not None and d_yeh_idx is not None:
+                if d_chen_idx < d_yeh_idx:
+                    name_display = f'<span class="flame-name">{name_str}<span class="fire-down"></span><span class="explosion-down"></span></span>'
+                else:
+                    name_display = f'<span class="flame-name">{name_str}<span class="fire-up"></span><span class="explosion-up"></span></span>'
+            else:
+                name_display = f'<span class="flame-name">{name_str}</span>'
+        elif "臨恩" in name_str:
+            if d_chen_idx is not None and d_yeh_idx is not None:
+                if d_yeh_idx < d_chen_idx:
+                    name_display = f'<span class="ice-name">{name_str}<span class="ice-down"></span></span>'
+                else:
+                    name_display = f'<span class="ice-name">{name_str}<span class="ice-up"></span></span>'
+            else:
+                name_display = f'<span class="ice-name">{name_str}</span>'
+        else:
+            name_display = name_str
+
+        detail_html += f'<tr><td>{row["店家"]}</td><td>{name_display}</td><td>{row["餐點"]}</td><td>${row["金額"]}</td><td>{row["備註"]}</td></tr>'
+    detail_html += '</tbody></table>'
     st.markdown(detail_html, unsafe_allow_html=True)
 
     # --- 刪除特定訂單功能（含密碼保護） ---
