@@ -189,7 +189,7 @@ RESTAURANT_MENUS = {
     }
 }
 
-# 動態產生零延遲、對稱相撞大爆炸 CSS（1.5s linear 精確同步）
+# 動態產生零延遲、對稱相撞大爆炸 CSS（提前至 25% 幀引爆）
 def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
     if top_idx is None or btm_idx is None or top_idx == btm_idx:
         return ""
@@ -198,61 +198,63 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
     
     return f"""
     <style>
-    /* 上方選手：0-20% 蓄力 -> 20-48% 極速衝刺 -> 48-52% 中心碰撞停頓 -> 52-65% 震退 -> 100% 回位 */
+    /* 上方選手：0-8% 蓄力 -> 8-25% 瞬間衝刺 -> 25% 精準抵達中心 -> 25-38% 震退 -> 100% 回位 */
     @keyframes smashDown_{table_id} {{
         0% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
-        20% {{ transform: translateY(-8px) scale(0.95); filter: brightness(1.2); }}
-        48% {{ 
+        8% {{ transform: translateY(-8px) scale(0.96); filter: brightness(1.2); }}
+        24% {{ 
             transform: translateY({distance_px}px) scale(1.35) rotate(-3deg); 
             filter: brightness(2.8) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #ff3300);
         }}
-        52% {{ 
+        26% {{ 
             transform: translateY({distance_px}px) scale(1.35) rotate(-3deg); 
             filter: brightness(2.8) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #ff3300);
         }}
-        65% {{ 
-            transform: translateY({int(distance_px * 0.25)}px) scale(1.05) rotate(3deg); 
-            filter: brightness(1.4) drop-shadow(0 0 12px #ff8800);
+        38% {{ 
+            transform: translateY({int(distance_px * 0.35)}px) scale(1.1) rotate(4deg); 
+            filter: brightness(1.5) drop-shadow(0 0 15px #ff8800);
         }}
+        55% {{ transform: translateY({int(distance_px * 0.05)}px) scale(1.02); }}
         100% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
     }}
 
-    /* 下方選手：0-20% 蓄力 -> 20-48% 極速衝刺 -> 48-52% 中心碰撞停頓 -> 52-65% 震退 -> 100% 回位 */
+    /* 下方選手：0-8% 蓄力 -> 8-25% 瞬間衝刺 -> 25% 精準抵達中心 -> 25-38% 震退 -> 100% 回位 */
     @keyframes smashUp_{table_id} {{
         0% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
-        20% {{ transform: translateY(8px) scale(0.95); filter: brightness(1.2); }}
-        48% {{ 
+        8% {{ transform: translateY(8px) scale(0.96); filter: brightness(1.2); }}
+        24% {{ 
             transform: translateY(-{distance_px}px) scale(1.35) rotate(3deg); 
             filter: brightness(2.8) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #00e5ff);
         }}
-        52% {{ 
+        26% {{ 
             transform: translateY(-{distance_px}px) scale(1.35) rotate(3deg); 
             filter: brightness(2.8) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #00e5ff);
         }}
-        65% {{ 
-            transform: translateY(-{int(distance_px * 0.25)}px) scale(1.05) rotate(-3deg); 
-            filter: brightness(1.4) drop-shadow(0 0 12px #00b0ff);
+        38% {{ 
+            transform: translateY(-{int(distance_px * 0.35)}px) scale(1.1) rotate(-4deg); 
+            filter: brightness(1.5) drop-shadow(0 0 15px #00b0ff);
         }}
+        55% {{ transform: translateY(-{int(distance_px * 0.05)}px) scale(1.02); }}
         100% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
     }}
 
-    /* 中心大爆炸：48% 碰觸瞬間在中心點引爆，52% 擴散，54% 瞬間消失（絕不隨退回原位移動） */
+    /* 中心大爆炸：25% 相撞瞬間零時差爆發，30% 快速擴散消散 */
     @keyframes explosionBurst_{table_id} {{
-        0%, 46% {{ 
+        0%, 23% {{ 
             opacity: 0; 
             transform: translate(-50%, -50%) scale(0.1); 
         }}
-        48% {{ 
+        25% {{ 
             opacity: 1; 
             transform: translate(-50%, -50%) scale(3.5) rotate(45deg); 
             box-shadow: 0 0 35px #ffffff, 0 0 70px #ffea00, 0 0 100px #ff3300, 0 0 120px #00e5ff;
         }}
-        52% {{ 
+        28% {{ 
             opacity: 0.9; 
             transform: translate(-50%, -50%) scale(5.5) rotate(90deg); 
             box-shadow: 0 0 50px rgba(255,255,255,1), 0 0 90px rgba(255,69,0,0.8), 0 0 115px rgba(0,229,255,0.8);
         }}
-        54% {{ 
+        30% {{ 
             opacity: 0; 
             transform: translate(-50%, -50%) scale(6.5) rotate(140deg); 
         }}
