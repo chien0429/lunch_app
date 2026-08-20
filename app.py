@@ -111,7 +111,7 @@ RESTAURANT_MENUS = {
         "黃金蕎麥冬瓜(L)": 40, "黃金蕎麥奶茶(M)": 50, "黃金蕎麥奶茶(L)": 55, "黃金蕎麥那提(M)": 55,
         "黃金蕎麥那提(L)": 60, "日式抹茶初雪": 50, "黑糖抹茶初雪": 55, "關山黑糖那提": 55,
         "黑糖竹薑茶": 45, "黑糖竹薑那提": 50, "蜜香竹薑茶": 40, "加料: 梅子": 5,
-        "加料: 桂花釀": 10, "加料: 黑糖波霸/珍珠/椰果/QQ": 15, "加料: 愛玉凍/仙草凍/布丁/多多": 15,
+        "加料: 桂花釀": 10, "加料: 黑糖波霸/珍珠/QQ": 15, "加料: 愛玉凍/仙草凍/布丁/多多": 15,
         "加料: 冰淇淋/黑糖Q凍/桂花凍/青梅凍": 20, "加料: 牛奶/蜂蜜": 25,
     },
     "龍饌食堂": {
@@ -189,7 +189,7 @@ RESTAURANT_MENUS = {
     }
 }
 
-# 注入羽毛球對打專屬 CSS 與畫布樣式
+# 注入純 CSS 羽毛球飛行與跑位樣式
 st.markdown("""
 <style>
 /* 常態字體 */
@@ -217,7 +217,7 @@ st.markdown("""
     animation: iceGlow 1.4s infinite alternate ease-in-out;
 }
 
-/* 俊丞（上方選手）左右滑步跑位 */
+/* 1. 俊丞（上方選手）左右滑步跑位 */
 @keyframes playerTopSwing {
     0%   { transform: translateX(-20px); }
     25%  { transform: translateX(20px); }
@@ -237,7 +237,7 @@ st.markdown("""
     z-index: 10;
 }
 
-/* 臨恩（下方選手）左右滑步跑位 */
+/* 2. 臨恩（下方選手）左右滑步跑位 */
 @keyframes playerBottomSwing {
     0%   { transform: translateX(20px); }
     25%  { transform: translateX(-20px); }
@@ -282,19 +282,56 @@ st.markdown("""
     animation: racketHitBottom 2.0s infinite ease-in-out;
 }
 
-.badminton-container {
-    position: relative;
-    width: 100%;
+/* 3. 真・羽毛球（純 CSS/SVG 繪製，來回垂直飛越扣殺） */
+@keyframes flyShuttlecock {
+    0% {
+        /* 俊丞球拍出發 */
+        top: 2px;
+        left: 20px;
+        transform: rotate(175deg) scale(0.9);
+        filter: drop-shadow(0 0 6px #ff3b00);
+    }
+    45% {
+        /* 俯衝飛向臨恩 */
+        top: calc(100% - 10px);
+        left: 30px;
+        transform: rotate(190deg) scale(1.15);
+        filter: drop-shadow(0 0 10px #ffea00);
+    }
+    50% {
+        /* 精確打中臨恩球拍 (反彈折返) */
+        top: calc(100% + 2px);
+        left: 35px;
+        transform: rotate(10deg) scale(1.25);
+        filter: drop-shadow(0 0 12px #00e5ff);
+    }
+    95% {
+        /* 高遠球抽回俊丞 */
+        top: 15px;
+        left: 10px;
+        transform: rotate(-25deg) scale(1.0);
+        filter: drop-shadow(0 0 8px #80d8ff);
+    }
+    100% {
+        top: 2px;
+        left: 20px;
+        transform: rotate(175deg) scale(0.9);
+        filter: drop-shadow(0 0 6px #ff3b00);
+    }
 }
 
-.badminton-canvas {
+.badminton-ball-entity {
     position: absolute;
-    top: 0;
-    left: 0;
+    width: 22px;
+    height: 22px;
+    pointer-events: none;
+    animation: flyShuttlecock 2.0s infinite ease-in-out;
+    z-index: 999;
+}
+
+.badminton-ball-entity svg {
     width: 100%;
     height: 100%;
-    pointer-events: none;
-    z-index: 999;
 }
 
 .custom-table {
@@ -317,123 +354,19 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# 嵌入即時座標追蹤 JavaScript 物理引擎
-BADMINTON_JS = """
-<script>
-(function() {
-    function startBadmintonMatch() {
-        const containers = document.querySelectorAll('.badminton-container');
-        containers.forEach(container => {
-            let canvas = container.querySelector('.badminton-canvas');
-            if (!canvas) {
-                canvas = document.createElement('canvas');
-                canvas.className = 'badminton-canvas';
-                container.prepend(canvas);
-            }
-            const ctx = canvas.getContext('2d');
-            
-            function resize() {
-                canvas.width = container.offsetWidth;
-                canvas.height = container.offsetHeight;
-            }
-            resize();
-            window.addEventListener('resize', resize);
-
-            let startTime = null;
-            const duration = 2000; // 一回合 2 秒
-
-            function drawShuttlecock(x, y, angle) {
-                ctx.save();
-                ctx.translate(x, y);
-                ctx.rotate(angle);
-                
-                // 光芒拖尾
-                ctx.shadowColor = '#ffb300';
-                ctx.shadowBlur = 10;
-
-                // 羽毛冠身 (白色)
-                ctx.beginPath();
-                ctx.moveTo(-7, -12);
-                ctx.lineTo(7, -12);
-                ctx.lineTo(3, 4);
-                ctx.lineTo(-3, 4);
-                ctx.closePath();
-                ctx.fillStyle = '#ffffff';
-                ctx.fill();
-                ctx.strokeStyle = '#666666';
-                ctx.lineWidth = 1;
-                ctx.stroke();
-
-                // 藍色繫帶
-                ctx.beginPath();
-                ctx.moveTo(-5, -4);
-                ctx.lineTo(5, -4);
-                ctx.strokeStyle = '#1976d2';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-
-                // 軟木塞球頭 (米褐色)
-                ctx.beginPath();
-                ctx.arc(0, 6, 4, 0, Math.PI * 2);
-                ctx.fillStyle = '#d7ccc8';
-                ctx.fill();
-                ctx.strokeStyle = '#5d4037';
-                ctx.lineWidth = 1;
-                ctx.stroke();
-
-                ctx.restore();
-            }
-
-            function animate(timestamp) {
-                if (!startTime) startTime = timestamp;
-                const elapsed = (timestamp - startTime) % duration;
-                const progress = elapsed / duration;
-
-                const topNode = container.querySelector('.player-top-node .racket-icon-top');
-                const btmNode = container.querySelector('.player-bottom-node .racket-icon-bottom');
-
-                if (topNode && btmNode) {
-                    const cRect = container.getBoundingClientRect();
-                    const tRect = topNode.getBoundingClientRect();
-                    const bRect = btmNode.getBoundingClientRect();
-
-                    const x1 = tRect.left - cRect.left + tRect.width / 2;
-                    const y1 = tRect.top - cRect.top + tRect.height / 2;
-                    const x2 = bRect.left - cRect.left + bRect.width / 2;
-                    const y2 = bRect.top - cRect.top + bRect.height / 2;
-
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                    let currentX, currentY, angle;
-
-                    if (progress < 0.5) {
-                        // 0 ~ 0.5: 俊丞扣殺至臨恩
-                        const t = progress / 0.5;
-                        const easeT = t * t * (3 - 2 * t);
-                        // 帶弧度飛行
-                        currentX = x1 + (x2 - x1) * easeT + Math.sin(t * Math.PI) * 25;
-                        currentY = y1 + (y2 - y1) * easeT;
-                        angle = Math.atan2(y2 - y1, (x2 - x1) + Math.cos(t * Math.PI) * 15) - Math.PI / 2;
-                    } else {
-                        // 0.5 ~ 1.0: 臨恩反抽回俊丞
-                        const t = (progress - 0.5) / 0.5;
-                        const easeT = t * t * (3 - 2 * t);
-                        currentX = x2 + (x1 - x2) * easeT - Math.sin(t * Math.PI) * 25;
-                        currentY = y2 + (y1 - y2) * easeT;
-                        angle = Math.atan2(y1 - y2, (x1 - x2) - Math.cos(t * Math.PI) * 15) - Math.PI / 2;
-                    }
-
-                    drawShuttlecock(currentX, currentY, angle);
-                }
-
-                requestAnimationFrame(animate);
-            }
-            requestAnimationFrame(animate);
-        });
-    }
-    setTimeout(startBadmintonMatch, 300);
-})();
-</script>
+# 羽毛球實體 SVG 圖示（白色羽冠 + 軟木塞球頭）
+SHUTTLE_ICON = """
+<div class="badminton-ball-entity">
+    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M14 16 L32 50 L50 16 Z" fill="#ffffff" stroke="#444444" stroke-width="2.5"/>
+        <line x1="22" y1="18" x2="32" y2="48" stroke="#bbbbbb" stroke-width="2"/>
+        <line x1="32" y1="16" x2="32" y2="50" stroke="#bbbbbb" stroke-width="2"/>
+        <line x1="42" y1="18" x2="32" y2="48" stroke="#bbbbbb" stroke-width="2"/>
+        <path d="M16 26 Q32 32 48 26" stroke="#0070f3" stroke-width="3" fill="none"/>
+        <path d="M20 36 Q32 41 44 36" stroke="#0070f3" stroke-width="3" fill="none"/>
+        <circle cx="32" cy="52" r="7.5" fill="#d7ccc8" stroke="#5d4037" stroke-width="2.5"/>
+    </svg>
+</div>
 """
 
 # --- 點餐區 ---
@@ -513,24 +446,25 @@ if not orders_df.empty:
     st.markdown("**【每人應收金額】**")
     person_df = orders_df.groupby("姓名")["金額"].sum().reset_index(name="應付金額")
     
-    # 兩人都點餐時：自動將俊丞排在上方、臨恩排在下方，啟動羽球對打！
+    # 兩人都點餐時：自動將俊丞排在上方第一位、臨恩排在下方最後一位，展開精準羽毛球對打！
     if is_playing_badminton:
         chen_row = person_df[person_df["姓名"].str.contains("俊丞", na=False)]
         yeh_row = person_df[person_df["姓名"].str.contains("臨恩", na=False)]
         other_rows = person_df[~person_df["姓名"].str.contains("俊丞|臨恩", na=False)]
         person_df = pd.concat([chen_row, other_rows, yeh_row], ignore_index=True)
 
-    person_html = '<div class="badminton-container">'
-    person_html += '<table class="custom-table"><thead><tr><th>姓名</th><th>應付金額</th></tr></thead><tbody>'
+    person_html = '<table class="custom-table"><thead><tr><th>姓名</th><th>應付金額</th></tr></thead><tbody>'
     for idx, row in person_df.iterrows():
         name_str = str(row["姓名"])
         if "俊丞" in name_str:
             if is_playing_badminton:
-                name_display = f'<span class="player-top-node">{name_str}<span class="racket-icon-top">🏸</span></span>'
+                # 俊丞在上方揮拍發射真・羽毛球
+                name_display = f'<span class="player-top-node">{name_str}<span class="racket-icon-top">🏸</span>{SHUTTLE_ICON}</span>'
             else:
                 name_display = f'<span class="flame-solo">{name_str}</span>'
         elif "臨恩" in name_str:
             if is_playing_badminton:
+                # 臨恩在下方接球反抽
                 name_display = f'<span class="player-bottom-node">{name_str}<span class="racket-icon-bottom">🏸</span></span>'
             else:
                 name_display = f'<span class="ice-solo">{name_str}</span>'
@@ -538,17 +472,12 @@ if not orders_df.empty:
             name_display = name_str
         
         person_html += f'<tr><td>{name_display}</td><td>${row["應付金額"]} 元</td></tr>'
-    person_html += '</tbody></table></div>'
-    
-    if is_playing_badminton:
-        person_html += BADMINTON_JS
-        
+    person_html += '</tbody></table>'
     st.markdown(person_html, unsafe_allow_html=True)
 
     # 3. 詳細點餐名冊
     st.markdown("**【詳細點餐名冊】**")
-    detail_html = '<div class="badminton-container">'
-    detail_html += '<table class="custom-table"><thead><tr><th>店家</th><th>姓名</th><th>餐點</th><th>金額</th><th>備註</th></tr></thead><tbody>'
+    detail_html = '<table class="custom-table"><thead><tr><th>店家</th><th>姓名</th><th>餐點</th><th>金額</th><th>備註</th></tr></thead><tbody>'
     for idx, row in orders_df.iterrows():
         name_str = str(row["姓名"])
         if "俊丞" in name_str:
@@ -565,7 +494,7 @@ if not orders_df.empty:
             name_display = name_str
 
         detail_html += f'<tr><td>{row["店家"]}</td><td>{name_display}</td><td>{row["餐點"]}</td><td>${row["金額"]}</td><td>{row["備註"]}</td></tr>'
-    detail_html += '</tbody></table></div>'
+    detail_html += '</tbody></table>'
     st.markdown(detail_html, unsafe_allow_html=True)
 
     # --- 刪除特定訂單功能（含密碼保護） ---
