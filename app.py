@@ -26,7 +26,7 @@ def save_orders(df):
 
 # 常用同事名單
 MEMBERS = [
-    "🔥⚡【至尊霸主】乂卍↖★煞氣a臨恩☆↘★⚡🔥",
+    "葉臨恩",
     "陳俊丞",
     "楊承凱", "倪宗安", "王國祐", "呂盈毅", "謝嘉雲", "顏寶容", "章哲勳", "陳威成",
     "謝文玲", "李雨柔", "皮爵赫", "陳柏伸", "黃志成", "陳柏邑", "盧廷謙", "王宗瑜",
@@ -189,9 +189,10 @@ RESTAURANT_MENUS = {
     }
 }
 
-# 注入純 CSS 火焰燃燒字體樣式（僅針對字體本身）
+# 注入純 CSS 烈焰、極冰與冰火碰撞動畫樣式
 st.markdown("""
 <style>
+/* 1. 俊丞專屬：純火焰燃燒字體 */
 @keyframes pureFlameText {
     0% {
         color: #ffeedd;
@@ -212,6 +213,64 @@ st.markdown("""
     letter-spacing: 2px;
     animation: pureFlameText 1.2s infinite alternate ease-in-out;
 }
+
+/* 2. 臨恩專屬：純極寒冰霜字體 */
+@keyframes pureIceText {
+    0% {
+        color: #e0f7fa;
+        text-shadow: 0 0 4px #00e5ff, 0 0 8px #00b0ff, 0 0 14px #2979ff, 0 0 20px #00e5ff;
+    }
+    50% {
+        color: #ffffff;
+        text-shadow: 0 0 8px #80d8ff, 0 0 15px #00e5ff, 0 0 22px #0091ea, 0 0 28px #00b0ff;
+    }
+    100% {
+        color: #e0f7fa;
+        text-shadow: 0 0 4px #00e5ff, 0 0 8px #00b0ff, 0 0 14px #2979ff, 0 0 20px #00e5ff;
+    }
+}
+.ice-name {
+    display: inline-block;
+    font-weight: 900;
+    letter-spacing: 2px;
+    animation: pureIceText 1.5s infinite alternate ease-in-out;
+}
+
+/* 3. 冰火持續碰撞對決橫幅 */
+@keyframes clashGlow {
+    0% {
+        box-shadow: 0 0 20px #ff3b00, 0 0 40px #00e5ff, inset 0 0 15px #ffffff;
+    }
+    50% {
+        box-shadow: 0 0 35px #ff5500, 0 0 60px #00b0ff, inset 0 0 25px #ffea00;
+    }
+    100% {
+        box-shadow: 0 0 20px #ff3b00, 0 0 40px #00e5ff, inset 0 0 15px #ffffff;
+    }
+}
+@keyframes shockwave {
+    0% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.08); opacity: 1; text-shadow: 0 0 15px #fff, 0 0 25px #ffea00; }
+    100% { transform: scale(1); opacity: 0.8; }
+}
+.clash-banner {
+    background: linear-gradient(90deg, #b71c1c 0%, #ff5722 35%, #ffffff 50%, #00b0ff 65%, #0d47a1 100%);
+    border-radius: 12px;
+    padding: 14px 10px;
+    text-align: center;
+    margin: 15px 0 25px 0;
+    animation: clashGlow 1.2s infinite alternate ease-in-out;
+    border: 2px solid #ffffff;
+}
+.clash-content {
+    font-size: 18px;
+    font-weight: 900;
+    color: #111;
+    display: inline-block;
+    animation: shockwave 0.8s infinite alternate ease-in-out;
+    letter-spacing: 2px;
+}
+
 .custom-table {
     width: 100%;
     border-collapse: collapse;
@@ -236,18 +295,8 @@ st.subheader("📝 我要點餐")
 selected_restaurant = st.selectbox("選擇今日訂購店家", list(RESTAURANT_MENUS.keys()))
 current_menu = RESTAURANT_MENUS[selected_restaurant]
 
-# 名字選擇
+# 名字選擇（點單階段乾淨正常）
 selected_member = st.selectbox("選擇點餐人員", MEMBERS)
-
-# 特效：煞氣a臨恩專屬炫彩橫幅
-if "臨恩" in selected_member:
-    st.markdown("""
-    <div style="background: linear-gradient(90deg, #ff007f, #7928ca, #0070f3); padding: 12px; border-radius: 10px; text-align: center; margin-bottom: 15px; box-shadow: 0 0 15px #ff007f;">
-        <span style="color: #ffffff; font-size: 20px; font-weight: 900; letter-spacing: 2px; text-shadow: 0 0 8px #fff, 0 0 15px #ff0080;">
-            ⚠️ 警告：至尊霸主【煞氣a臨恩】已降臨點餐戰場！全體肅靜！ ⚡🔥
-        </span>
-    </div>
-    """, unsafe_allow_html=True)
 
 with st.form(key="order_form", clear_on_submit=True):
     custom_name = ""
@@ -287,14 +336,8 @@ with st.form(key="order_form", clear_on_submit=True):
             updated_df = pd.concat([current_df, pd.DataFrame(new_rows)], ignore_index=True)
             save_orders(updated_df)
             
-            # 特殊人物送出特效
-            if "臨恩" in final_name:
-                st.balloons()
-                st.success(f"👑 恭迎【煞氣a臨恩】御駕親征！已成功點購 {len(selected_items)} 道御膳！")
-            else:
-                user_total = sum(current_menu[item] for item in selected_items)
-                st.success(f"已記錄 {final_name} 的訂單！共 {len(selected_items)} 樣，個人小計：${user_total} 元")
-            
+            user_total = sum(current_menu[item] for item in selected_items)
+            st.success(f"已記錄 {final_name} 的訂單！共 {len(selected_items)} 樣，個人小計：${user_total} 元")
             st.rerun()
 
 # --- 統計與明細區 ---
@@ -304,6 +347,19 @@ st.subheader("📊 目前點餐狀況與統計")
 orders_df = load_orders()
 
 if not orders_df.empty:
+    # 判斷是否同時有點餐（觸發冰火碰撞特效）
+    has_chen = any("俊丞" in str(name) for name in orders_df["姓名"])
+    has_yeh = any("臨恩" in str(name) for name in orders_df["姓名"])
+
+    if has_chen and has_yeh:
+        st.markdown("""
+        <div class="clash-banner">
+            <span class="clash-content">
+                🔥 焚世烈焰【陳俊丞】 ⚔️ 極凍寒霜【葉臨恩】 ❄️ —— 冰火領域劇烈碰撞中！
+            </span>
+        </div>
+        """, unsafe_allow_html=True)
+
     total_qty = len(orders_df)
     total_amount = orders_df["金額"].sum()
     col1, col2 = st.columns(2)
@@ -315,11 +371,14 @@ if not orders_df.empty:
     summary_df = orders_df.groupby(["店家", "餐點"]).size().reset_index(name="數量")
     st.table(summary_df)
 
-    # 格式化人名函數（陳俊丞專屬純火焰字體，不加任何圖案）
+    # 格式化人名函數（俊丞火焰、臨恩極冰，其餘正常）
     def render_name(name):
-        if name == "陳俊丞":
-            return '<span class="flame-name">陳俊丞</span>'
-        return str(name)
+        name_str = str(name)
+        if "俊丞" in name_str:
+            return f'<span class="flame-name">{name_str}</span>'
+        elif "臨恩" in name_str:
+            return f'<span class="ice-name">{name_str}</span>'
+        return name_str
 
     # 2. 依人名統計每人應付金額
     st.markdown("**【每人應收金額】**")
