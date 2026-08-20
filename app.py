@@ -189,8 +189,8 @@ RESTAURANT_MENUS = {
     }
 }
 
-# 動態產生零延遲、對稱相撞大爆炸 CSS
-def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=52):
+# 動態產生零延遲、對稱相撞大爆炸 CSS（1.5s linear 精確同步）
+def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
     if top_idx is None or btm_idx is None or top_idx == btm_idx:
         return ""
     diff = abs(btm_idx - top_idx)
@@ -198,57 +198,63 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=52):
     
     return f"""
     <style>
-    /* 上方選手：0-18% 蓄力 -> 18-50% 極速俯衝 -> 50% 正好到達中心相撞 -> 50-60% 震退 */
+    /* 上方選手：0-20% 蓄力 -> 20-48% 極速衝刺 -> 48-52% 中心碰撞停頓 -> 52-65% 震退 -> 100% 回位 */
     @keyframes smashDown_{table_id} {{
         0% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
-        18% {{ transform: translateY(-8px) scale(0.96); filter: brightness(1.2); }}
-        50% {{ 
+        20% {{ transform: translateY(-8px) scale(0.95); filter: brightness(1.2); }}
+        48% {{ 
             transform: translateY({distance_px}px) scale(1.35) rotate(-3deg); 
             filter: brightness(2.8) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #ff3300);
         }}
-        58% {{ 
-            transform: translateY({int(distance_px * 0.45)}px) scale(1.1) rotate(4deg); 
-            filter: brightness(1.5) drop-shadow(0 0 15px #ff8800);
+        52% {{ 
+            transform: translateY({distance_px}px) scale(1.35) rotate(-3deg); 
+            filter: brightness(2.8) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #ff3300);
         }}
-        75% {{ transform: translateY({int(distance_px * 0.08)}px) scale(1.02); }}
+        65% {{ 
+            transform: translateY({int(distance_px * 0.25)}px) scale(1.05) rotate(3deg); 
+            filter: brightness(1.4) drop-shadow(0 0 12px #ff8800);
+        }}
         100% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
     }}
 
-    /* 下方選手：0-18% 蓄力 -> 18-50% 極速衝天 -> 50% 正好到達中心相撞 -> 50-60% 震退 */
+    /* 下方選手：0-20% 蓄力 -> 20-48% 極速衝刺 -> 48-52% 中心碰撞停頓 -> 52-65% 震退 -> 100% 回位 */
     @keyframes smashUp_{table_id} {{
         0% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
-        18% {{ transform: translateY(8px) scale(0.96); filter: brightness(1.2); }}
-        50% {{ 
+        20% {{ transform: translateY(8px) scale(0.95); filter: brightness(1.2); }}
+        48% {{ 
             transform: translateY(-{distance_px}px) scale(1.35) rotate(3deg); 
             filter: brightness(2.8) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #00e5ff);
         }}
-        58% {{ 
-            transform: translateY(-{int(distance_px * 0.45)}px) scale(1.1) rotate(-4deg); 
-            filter: brightness(1.5) drop-shadow(0 0 15px #00b0ff);
+        52% {{ 
+            transform: translateY(-{distance_px}px) scale(1.35) rotate(3deg); 
+            filter: brightness(2.8) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #00e5ff);
         }}
-        75% {{ transform: translateY(-{int(distance_px * 0.08)}px) scale(1.02); }}
+        65% {{ 
+            transform: translateY(-{int(distance_px * 0.25)}px) scale(1.05) rotate(-3deg); 
+            filter: brightness(1.4) drop-shadow(0 0 12px #00b0ff);
+        }}
         100% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
     }}
 
-    /* 中心大爆炸：50% 相撞瞬間零時差爆發，58% 擴散消散，絕不拖泥帶水 */
-    @keyframes explosionSupernova_{table_id} {{
-        0%, 48% {{ 
+    /* 中心大爆炸：48% 碰觸瞬間在中心點引爆，52% 擴散，54% 瞬間消失（絕不隨退回原位移動） */
+    @keyframes explosionBurst_{table_id} {{
+        0%, 46% {{ 
             opacity: 0; 
-            transform: translate(-50%, -50%) scale(0.1) rotate(0deg); 
+            transform: translate(-50%, -50%) scale(0.1); 
         }}
-        50% {{ 
+        48% {{ 
             opacity: 1; 
-            transform: translate(-50%, -50%) scale(4.0) rotate(45deg); 
+            transform: translate(-50%, -50%) scale(3.5) rotate(45deg); 
             box-shadow: 0 0 35px #ffffff, 0 0 70px #ffea00, 0 0 100px #ff3300, 0 0 120px #00e5ff;
         }}
-        55% {{ 
-            opacity: 0.75; 
-            transform: translate(-50%, -50%) scale(5.8) rotate(90deg); 
+        52% {{ 
+            opacity: 0.9; 
+            transform: translate(-50%, -50%) scale(5.5) rotate(90deg); 
             box-shadow: 0 0 50px rgba(255,255,255,1), 0 0 90px rgba(255,69,0,0.8), 0 0 115px rgba(0,229,255,0.8);
         }}
-        58% {{ 
+        54% {{ 
             opacity: 0; 
-            transform: translate(-50%, -50%) scale(7.2) rotate(140deg); 
+            transform: translate(-50%, -50%) scale(6.5) rotate(140deg); 
         }}
         100% {{ 
             opacity: 0; 
@@ -261,7 +267,7 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=52):
         position: relative;
         font-weight: 900;
         letter-spacing: 2px;
-        animation: smashDown_{table_id} 1.6s infinite ease-in-out;
+        animation: smashDown_{table_id} 1.5s infinite linear;
         z-index: 25;
     }}
 
@@ -270,7 +276,7 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=52):
         position: relative;
         font-weight: 900;
         letter-spacing: 2px;
-        animation: smashUp_{table_id} 1.6s infinite ease-in-out;
+        animation: smashUp_{table_id} 1.5s infinite linear;
         z-index: 25;
     }}
 
@@ -283,7 +289,7 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=52):
         border-radius: 50%;
         background: radial-gradient(circle, #ffffff 15%, #ffff77 35%, #ff4500 65%, #00e5ff 90%, transparent 100%);
         pointer-events: none;
-        animation: explosionSupernova_{table_id} 1.6s infinite ease-out;
+        animation: explosionBurst_{table_id} 1.5s infinite linear;
         z-index: 999;
     }}
     </style>
@@ -431,12 +437,17 @@ st.markdown("""
     position: relative;
 }
 .custom-table tr {
-    height: 52px;
+    height: 48px !important;
+    min-height: 48px !important;
+    max-height: 48px !important;
     box-sizing: border-box;
 }
 .custom-table th, .custom-table td {
-    padding: 10px 12px;
-    height: 52px;
+    padding: 0 12px !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    max-height: 48px !important;
+    line-height: 48px !important;
     box-sizing: border-box;
     border: 1px solid rgba(128, 128, 128, 0.2);
     text-align: left;
@@ -449,7 +460,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# 渲染角色名牌（常態 vs 對撞）
+# 渲染角色名牌（僅在上方選手綁定中心碰撞點唯一的爆炸核，下方選手絕對不掛載爆炸）
 def render_player_flame(name_str, table_id="", is_top=None):
     if is_top is None:
         return f'<span class="flame-name-wrapper">{name_str}<span class="flame-spark-1"></span><span class="flame-spark-2"></span></span>'
@@ -549,7 +560,7 @@ if not orders_df.empty:
     if is_clashing and p_chen_idx is not None and p_yeh_idx is not None:
         top_idx_p = min(p_chen_idx, p_yeh_idx)
         btm_idx_p = max(p_chen_idx, p_yeh_idx)
-        st.markdown(generate_dynamic_clash_css("person", top_idx_p, btm_idx_p, row_height=52), unsafe_allow_html=True)
+        st.markdown(generate_dynamic_clash_css("person", top_idx_p, btm_idx_p, row_height=48), unsafe_allow_html=True)
 
     person_html = '<table class="custom-table"><thead><tr><th>姓名</th><th>應付金額</th></tr></thead><tbody>'
     for idx, row in person_df.iterrows():
@@ -582,7 +593,7 @@ if not orders_df.empty:
     if is_clashing and d_chen_idx is not None and d_yeh_idx is not None:
         top_idx_d = min(d_chen_idx, d_yeh_idx)
         btm_idx_d = max(d_chen_idx, d_yeh_idx)
-        st.markdown(generate_dynamic_clash_css("detail", top_idx_d, btm_idx_d, row_height=52), unsafe_allow_html=True)
+        st.markdown(generate_dynamic_clash_css("detail", top_idx_d, btm_idx_d, row_height=48), unsafe_allow_html=True)
 
     detail_html = '<table class="custom-table"><thead><tr><th>店家</th><th>姓名</th><th>餐點</th><th>金額</th><th>備註</th></tr></thead><tbody>'
     for idx, row in orders_df.iterrows():
