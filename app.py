@@ -189,96 +189,124 @@ RESTAURANT_MENUS = {
     }
 }
 
-# 注入純 CSS 烈焰、極冰與冰火激突粒子碰撞樣式
+# 注入強烈顯色 CSS（帶專屬深色能量底框，白底也能清楚看見烈焰與極冰）
 st.markdown("""
 <style>
-/* 1. 俊丞常態：純火焰燃燒字體 */
-@keyframes pureFlameText {
+/* 1. 俊丞常態：烈焰燃燒膠囊 */
+@keyframes flameAura {
     0% {
-        color: #ffeedd;
-        text-shadow: 0 0 3px #ffe600, 0 -2px 4px #ff5a00, 1px -5px 7px #ff2200, -1px -8px 12px #d00000;
+        box-shadow: 0 0 10px #ff3300, 0 0 20px #ff6600, inset 0 0 8px #ffcc00;
+        border-color: #ff3300;
     }
     50% {
-        color: #ffffff;
-        text-shadow: 0 0 6px #fffb00, -1px -3px 5px #ff7700, 2px -7px 10px #ff3300, 1px -12px 16px #900000;
+        box-shadow: 0 0 18px #ff0000, 0 0 28px #ff9900, inset 0 0 14px #ffff00;
+        border-color: #ffaa00;
     }
     100% {
-        color: #ffeedd;
-        text-shadow: 0 0 3px #ffe600, 0 -2px 4px #ff5a00, 1px -5px 7px #ff2200, -1px -8px 12px #d00000;
+        box-shadow: 0 0 10px #ff3300, 0 0 20px #ff6600, inset 0 0 8px #ffcc00;
+        border-color: #ff3300;
     }
 }
-.flame-name {
+.flame-box {
     display: inline-block;
+    background: linear-gradient(135deg, #1f0500, #3d0a00);
+    color: #fff3e0 !important;
     font-weight: 900;
+    padding: 4px 12px;
+    border-radius: 8px;
+    border: 1.5px solid #ff4500;
     letter-spacing: 2px;
-    animation: pureFlameText 1.2s infinite alternate ease-in-out;
+    text-shadow: 0 0 6px #ffe600, 0 -2px 8px #ff3b00, 0 -5px 12px #ff0000;
+    animation: flameAura 1.2s infinite alternate ease-in-out;
 }
 
-/* 2. 臨恩常態：純極寒冰霜字體 */
-@keyframes pureIceText {
+/* 2. 臨恩常態：極寒冰霜膠囊 */
+@keyframes iceAura {
     0% {
-        color: #e0f7fa;
-        text-shadow: 0 0 4px #00e5ff, 0 0 8px #00b0ff, 0 0 14px #2979ff, 0 0 20px #00e5ff;
+        box-shadow: 0 0 10px #00b0ff, 0 0 20px #00e5ff, inset 0 0 8px #e0f7fa;
+        border-color: #00e5ff;
     }
     50% {
-        color: #ffffff;
-        text-shadow: 0 0 8px #80d8ff, 0 0 15px #00e5ff, 0 0 22px #0091ea, 0 0 28px #00b0ff;
+        box-shadow: 0 0 18px #0070f3, 0 0 28px #80d8ff, inset 0 0 14px #ffffff;
+        border-color: #ffffff;
     }
     100% {
-        color: #e0f7fa;
-        text-shadow: 0 0 4px #00e5ff, 0 0 8px #00b0ff, 0 0 14px #2979ff, 0 0 20px #00e5ff;
+        box-shadow: 0 0 10px #00b0ff, 0 0 20px #00e5ff, inset 0 0 8px #e0f7fa;
+        border-color: #00e5ff;
     }
 }
-.ice-name {
+.ice-box {
     display: inline-block;
+    background: linear-gradient(135deg, #001220, #002244);
+    color: #e0f7fa !important;
     font-weight: 900;
+    padding: 4px 12px;
+    border-radius: 8px;
+    border: 1.5px solid #00e5ff;
     letter-spacing: 2px;
-    animation: pureIceText 1.5s infinite alternate ease-in-out;
+    text-shadow: 0 0 6px #80d8ff, 0 0 12px #00b0ff, 0 0 18px #0070f3;
+    animation: iceAura 1.4s infinite alternate ease-in-out;
 }
 
-/* 3. 冰火激戰對撞模式（兩人都點餐時觸發） */
-@keyframes flameClash {
+/* 3. 冰火激突對撞模式（兩人都點餐時觸發） */
+@keyframes clashFlame {
     0% {
-        text-shadow: 0 0 4px #ffcc00, 4px -2px 8px #ff4500, 10px 0px 14px #ff0000, 16px 0px 20px #00e5ff;
-        transform: translateX(0px);
+        transform: scale(1.02);
+        box-shadow: 0 0 12px #ff2200, 8px 0 18px #00e5ff, inset 0 0 10px #ffcc00;
+        border-color: #ff2200;
     }
     50% {
-        text-shadow: 0 0 8px #ffffff, 6px -4px 12px #ff6600, 14px 0px 18px #ff2200, 22px 0px 26px #00b0ff;
-        transform: translateX(3px);
+        transform: scale(1.06);
+        box-shadow: 0 0 25px #ff5500, 15px 0 28px #00b0ff, inset 0 0 18px #ffffff;
+        border-color: #ffffff;
     }
     100% {
-        text-shadow: 0 0 4px #ffcc00, 4px -2px 8px #ff4500, 10px 0px 14px #ff0000, 16px 0px 20px #00e5ff;
-        transform: translateX(0px);
+        transform: scale(1.02);
+        box-shadow: 0 0 12px #ff2200, 8px 0 18px #00e5ff, inset 0 0 10px #ffcc00;
+        border-color: #ff2200;
     }
 }
-.flame-clash-name {
+.clash-flame-box {
     display: inline-block;
+    background: linear-gradient(90deg, #300000 0%, #1a0022 100%);
+    color: #ffffff !important;
     font-weight: 900;
-    color: #fff2e0;
+    padding: 4px 14px;
+    border-radius: 8px;
+    border: 2px solid #ff4500;
     letter-spacing: 2px;
-    animation: flameClash 0.6s infinite alternate ease-in-out;
+    text-shadow: 0 0 6px #ffea00, 0 0 12px #ff3300, 4px 0 15px #00e5ff;
+    animation: clashFlame 0.6s infinite alternate ease-in-out;
 }
 
-@keyframes iceClash {
+@keyframes clashIce {
     0% {
-        text-shadow: 0 0 4px #80d8ff, -4px -2px 8px #00b0ff, -10px 0px 14px #0070f3, -16px 0px 20px #ff4500;
-        transform: translateX(0px);
+        transform: scale(1.02);
+        box-shadow: 0 0 12px #00b0ff, -8px 0 18px #ff4500, inset 0 0 10px #e0f7fa;
+        border-color: #00e5ff;
     }
     50% {
-        text-shadow: 0 0 8px #ffffff, -6px -4px 12px #00e5ff, -14px 0px 18px #2979ff, -22px 0px 26px #ff2200;
-        transform: translateX(-3px);
+        transform: scale(1.06);
+        box-shadow: 0 0 25px #00e5ff, -15px 0 28px #ff2200, inset 0 0 18px #ffffff;
+        border-color: #ffffff;
     }
     100% {
-        text-shadow: 0 0 4px #80d8ff, -4px -2px 8px #00b0ff, -10px 0px 14px #0070f3, -16px 0px 20px #ff4500;
-        transform: translateX(0px);
+        transform: scale(1.02);
+        box-shadow: 0 0 12px #00b0ff, -8px 0 18px #ff4500, inset 0 0 10px #e0f7fa;
+        border-color: #00e5ff;
     }
 }
-.ice-clash-name {
+.clash-ice-box {
     display: inline-block;
+    background: linear-gradient(90deg, #1a0022 0%, #001a33 100%);
+    color: #ffffff !important;
     font-weight: 900;
-    color: #e6ffff;
+    padding: 4px 14px;
+    border-radius: 8px;
+    border: 2px solid #00e5ff;
     letter-spacing: 2px;
-    animation: iceClash 0.6s infinite alternate ease-in-out;
+    text-shadow: 0 0 6px #80d8ff, 0 0 12px #0070f3, -4px 0 15px #ff4500;
+    animation: clashIce 0.6s infinite alternate ease-in-out;
 }
 
 .custom-table {
@@ -288,9 +316,10 @@ st.markdown("""
     font-size: 15px;
 }
 .custom-table th, .custom-table td {
-    padding: 10px;
+    padding: 12px 10px;
     border: 1px solid rgba(128, 128, 128, 0.2);
     text-align: left;
+    vertical-align: middle;
 }
 .custom-table th {
     background-color: rgba(128, 128, 128, 0.1);
@@ -373,17 +402,17 @@ if not orders_df.empty:
     summary_df = orders_df.groupby(["店家", "餐點"]).size().reset_index(name="數量")
     st.table(summary_df)
 
-    # 格式化人名函數（碰撞狀態 vs 常態狀態）
+    # 格式化人名函數（帶深色能量底框，確保白底完全顯色）
     def render_name(name):
         name_str = str(name)
         if "俊丞" in name_str:
             if is_clashing:
-                return f'<span class="flame-clash-name">{name_str}</span>'
-            return f'<span class="flame-name">{name_str}</span>'
+                return f'<span class="clash-flame-box">{name_str}</span>'
+            return f'<span class="flame-box">{name_str}</span>'
         elif "臨恩" in name_str:
             if is_clashing:
-                return f'<span class="ice-clash-name">{name_str}</span>'
-            return f'<span class="ice-name">{name_str}</span>'
+                return f'<span class="clash-ice-box">{name_str}</span>'
+            return f'<span class="ice-box">{name_str}</span>'
         return name_str
 
     # 2. 依人名統計每人應付金額
