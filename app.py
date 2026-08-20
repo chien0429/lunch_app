@@ -192,11 +192,11 @@ RESTAURANT_MENUS = {
 # 注入羽毛球對打特效 CSS
 st.markdown("""
 <style>
-/* 1. 常態烈焰字體（僅俊丞一人時） */
+/* 1. 常態字體 */
 @keyframes flameGlow {
-    0% { color: #ff3b00; text-shadow: 0 0 4px #ffaa00, 0 -2px 8px #ff2200; }
-    50% { color: #ff8800; text-shadow: 0 0 8px #ffff00, 0 -3px 12px #ff4400; }
-    100% { color: #ff3b00; text-shadow: 0 0 4px #ffaa00, 0 -2px 8px #ff2200; }
+    0% { color: #ff3b00; text-shadow: 0 0 4px #ffaa00; }
+    50% { color: #ff8800; text-shadow: 0 0 8px #ffff00; }
+    100% { color: #ff3b00; text-shadow: 0 0 4px #ffaa00; }
 }
 .flame-solo {
     display: inline-block;
@@ -205,11 +205,10 @@ st.markdown("""
     animation: flameGlow 1.2s infinite alternate ease-in-out;
 }
 
-/* 2. 常態極冰字體（僅臨恩一人時） */
 @keyframes iceGlow {
-    0% { color: #0091ea; text-shadow: 0 0 4px #80d8ff, 0 0 8px #00e5ff; }
-    50% { color: #00e5ff; text-shadow: 0 0 8px #ffffff, 0 0 14px #00b0ff; }
-    100% { color: #0091ea; text-shadow: 0 0 4px #80d8ff, 0 0 8px #00e5ff; }
+    0% { color: #0091ea; text-shadow: 0 0 4px #80d8ff; }
+    50% { color: #00e5ff; text-shadow: 0 0 8px #ffffff; }
+    100% { color: #0091ea; text-shadow: 0 0 4px #80d8ff; }
 }
 .ice-solo {
     display: inline-block;
@@ -218,13 +217,13 @@ st.markdown("""
     animation: iceGlow 1.4s infinite alternate ease-in-out;
 }
 
-/* 3. 俊丞（上方選手）左右滑步移動 */
+/* 2. 俊丞（上方選手）左右滑步跑位 */
 @keyframes playerTopSwing {
-    0%   { transform: translateX(-35px) rotate(-4deg); }
-    25%  { transform: translateX(20px) rotate(3deg); }
-    50%  { transform: translateX(-15px) rotate(-2deg); }
-    75%  { transform: translateX(35px) rotate(5deg); }
-    100% { transform: translateX(-35px) rotate(-4deg); }
+    0%   { transform: translateX(-30px); }
+    25%  { transform: translateX(25px); }
+    50%  { transform: translateX(-15px); }
+    75%  { transform: translateX(35px); }
+    100% { transform: translateX(-30px); }
 }
 .badminton-player-top {
     display: inline-flex;
@@ -238,26 +237,26 @@ st.markdown("""
     z-index: 10;
 }
 
-/* 上方球拍揮動 */
+/* 上方揮拍動作 */
 @keyframes racketTopHit {
     0%, 100% { transform: rotate(0deg); }
-    10% { transform: rotate(-35deg) scale(1.2); }
+    15% { transform: rotate(-40deg) scale(1.25); }
     50% { transform: rotate(10deg); }
 }
 .racket-top {
     display: inline-block;
-    font-size: 18px;
+    font-size: 20px;
     margin-left: 6px;
     animation: racketTopHit 2.2s infinite ease-in-out;
 }
 
-/* 4. 臨恩（下方選手）左右滑步移動 */
+/* 3. 臨恩（下方選手）左右滑步跑位 */
 @keyframes playerBottomSwing {
-    0%   { transform: translateX(35px) rotate(4deg); }
-    25%  { transform: translateX(-25px) rotate(-3deg); }
-    50%  { transform: translateX(15px) rotate(2deg); }
-    75%  { transform: translateX(-35px) rotate(-5deg); }
-    100% { transform: translateX(35px) rotate(4deg); }
+    0%   { transform: translateX(30px); }
+    25%  { transform: translateX(-25px); }
+    50%  { transform: translateX(15px); }
+    75%  { transform: translateX(-35px); }
+    100% { transform: translateX(30px); }
 }
 .badminton-player-bottom {
     display: inline-flex;
@@ -271,55 +270,70 @@ st.markdown("""
     z-index: 10;
 }
 
-/* 下方球拍揮動 */
+/* 下方揮拍動作 */
 @keyframes racketBottomHit {
     0%, 100% { transform: rotate(0deg); }
-    50% { transform: rotate(-35deg) scale(1.2); }
-    60% { transform: rotate(10deg); }
+    55% { transform: rotate(-40deg) scale(1.25); }
+    70% { transform: rotate(10deg); }
 }
 .racket-bottom {
     display: inline-block;
-    font-size: 18px;
+    font-size: 20px;
     margin-left: 6px;
     animation: racketBottomHit 2.2s infinite ease-in-out;
 }
 
-/* 5. 真正的羽毛球（🏸）：在俊丞球拍與臨恩球拍之間來回飛舞 */
-@keyframes shuttlecockFlight {
+/* 4. 跨越表格對打的超明顯羽毛球（🏸） */
+@keyframes shuttlecockCrossCourt {
     0% {
-        /* 上方俊丞球拍位置 */
-        transform: translate(65px, 6px) scale(0.9) rotate(160deg);
-        filter: drop-shadow(0 0 6px #ff3b00);
+        /* 俊丞上方球拍位置 (扣殺擊出) */
+        top: 25px;
+        left: 42%;
+        transform: scale(0.9) rotate(160deg);
+        filter: drop-shadow(0 0 8px #ff3b00) drop-shadow(0 0 12px #ffff00);
     }
     45% {
-        /* 飛向下方的弧線 */
-        transform: translate(95px, 35px) scale(1.2) rotate(195deg);
-        filter: drop-shadow(0 0 8px #ffcc00);
+        /* 高速飛向下方 */
+        top: 60%;
+        left: 58%;
+        transform: scale(1.3) rotate(200deg);
+        filter: drop-shadow(0 0 10px #ff9900) drop-shadow(0 0 15px #ffffff);
     }
     50% {
-        /* 下方臨恩球拍位置 (接球反彈) */
-        transform: translate(85px, 60px) scale(1.3) rotate(15deg);
-        filter: drop-shadow(0 0 10px #00e5ff);
+        /* 臨恩下方球拍位置 (接球反抽) */
+        top: 85%;
+        left: 55%;
+        transform: scale(1.4) rotate(15deg);
+        filter: drop-shadow(0 0 12px #00e5ff) drop-shadow(0 0 18px #2979ff);
     }
     95% {
-        /* 飛回上方的弧線 */
-        transform: translate(45px, 25px) scale(1.1) rotate(-25deg);
+        /* 高遠球抽回上方 */
+        top: 35%;
+        left: 45%;
+        transform: scale(1.1) rotate(-30deg);
         filter: drop-shadow(0 0 8px #80d8ff);
     }
     100% {
-        transform: translate(65px, 6px) scale(0.9) rotate(160deg);
-        filter: drop-shadow(0 0 6px #ff3b00);
+        top: 25px;
+        left: 42%;
+        transform: scale(0.9) rotate(160deg);
+        filter: drop-shadow(0 0 8px #ff3b00) drop-shadow(0 0 12px #ffff00);
     }
 }
-.flying-shuttlecock {
+
+.badminton-court-wrapper {
+    position: relative;
+    width: 100%;
+    overflow: visible !important;
+}
+
+.real-shuttlecock {
     position: absolute;
-    top: 50%;
-    left: 0;
-    font-size: 18px;
+    font-size: 24px;
     line-height: 1;
     pointer-events: none;
-    animation: shuttlecockFlight 2.2s infinite ease-in-out;
-    z-index: 999;
+    animation: shuttlecockCrossCourt 2.2s infinite ease-in-out;
+    z-index: 9999;
 }
 
 .custom-table {
@@ -328,12 +342,14 @@ st.markdown("""
     margin-bottom: 20px;
     font-size: 15px;
     position: relative;
+    overflow: visible !important;
 }
 .custom-table th, .custom-table td {
     padding: 14px 10px;
     border: 1px solid rgba(128, 128, 128, 0.2);
     text-align: left;
     vertical-align: middle;
+    overflow: visible !important;
 }
 .custom-table th {
     background-color: rgba(128, 128, 128, 0.1);
@@ -426,18 +442,21 @@ if not orders_df.empty:
         other_rows = person_df[~person_df["姓名"].str.contains("俊丞|臨恩", na=False)]
         person_df = pd.concat([chen_row, other_rows, yeh_row], ignore_index=True)
 
-    person_html = '<table class="custom-table"><thead><tr><th>姓名</th><th>應付金額</th></tr></thead><tbody>'
+    person_html = '<div class="badminton-court-wrapper">'
+    if is_playing_badminton:
+        # 在整個表格上方釋放自由飛行的羽毛球
+        person_html += '<span class="real-shuttlecock">🏸</span>'
+        
+    person_html += '<table class="custom-table"><thead><tr><th>姓名</th><th>應付金額</th></tr></thead><tbody>'
     for idx, row in person_df.iterrows():
         name_str = str(row["姓名"])
         if "俊丞" in name_str:
             if is_playing_badminton:
-                # 俊丞持球拍 + 飛行的羽毛球
-                name_display = f'<span class="badminton-player-top">{name_str}<span class="racket-top">🏸</span><span class="flying-shuttlecock">🏸</span></span>'
+                name_display = f'<span class="badminton-player-top">{name_str}<span class="racket-top">🏸</span></span>'
             else:
                 name_display = f'<span class="flame-solo">{name_str}</span>'
         elif "臨恩" in name_str:
             if is_playing_badminton:
-                # 臨恩持球拍
                 name_display = f'<span class="badminton-player-bottom">{name_str}<span class="racket-bottom">🏸</span></span>'
             else:
                 name_display = f'<span class="ice-solo">{name_str}</span>'
@@ -445,12 +464,16 @@ if not orders_df.empty:
             name_display = name_str
         
         person_html += f'<tr><td>{name_display}</td><td>${row["應付金額"]} 元</td></tr>'
-    person_html += '</tbody></table>'
+    person_html += '</tbody></table></div>'
     st.markdown(person_html, unsafe_allow_html=True)
 
     # 3. 詳細點餐名冊
     st.markdown("**【詳細點餐名冊】**")
-    detail_html = '<table class="custom-table"><thead><tr><th>店家</th><th>姓名</th><th>餐點</th><th>金額</th><th>備註</th></tr></thead><tbody>'
+    detail_html = '<div class="badminton-court-wrapper">'
+    if is_playing_badminton:
+        detail_html += '<span class="real-shuttlecock">🏸</span>'
+        
+    detail_html += '<table class="custom-table"><thead><tr><th>店家</th><th>姓名</th><th>餐點</th><th>金額</th><th>備註</th></tr></thead><tbody>'
     for idx, row in orders_df.iterrows():
         name_str = str(row["姓名"])
         if "俊丞" in name_str:
@@ -467,7 +490,7 @@ if not orders_df.empty:
             name_display = name_str
 
         detail_html += f'<tr><td>{row["店家"]}</td><td>{name_display}</td><td>{row["餐點"]}</td><td>${row["金額"]}</td><td>{row["備註"]}</td></tr>'
-    detail_html += '</tbody></table>'
+    detail_html += '</tbody></table></div>'
     st.markdown(detail_html, unsafe_allow_html=True)
 
     # --- 刪除特定訂單功能（含密碼保護） ---
