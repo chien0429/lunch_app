@@ -189,7 +189,7 @@ RESTAURANT_MENUS = {
     }
 }
 
-# 動態產生零延遲、對稱相撞大爆炸 CSS（50% 絕對咬合點）
+# 動態產生零延遲、對稱相撞大爆炸 CSS（50.0% 絕對咬合）
 def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
     if top_idx is None or btm_idx is None or top_idx == btm_idx:
         return ""
@@ -198,7 +198,7 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
     
     return f"""
     <style>
-    /* 上方選手：0-15% 蓄力 -> 15-50% 全速加速衝刺(ease-in) -> 50% 碰觸最高速 -> 50-65% 震退彈回(ease-out) */
+    /* 上方選手：0-15% 蓄力 -> 15-50% 全速加速衝刺(ease-in) -> 50% 碰觸最高速 -> 50-65% 震退彈回(ease-out) -> 65-100% 絕對靜止 */
     @keyframes smashDown_{table_id} {{
         0% {{
             transform: translateY(0px) scale(1);
@@ -217,8 +217,12 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
         }}
         65% {{ 
             transform: translateY({int(distance_px * 0.35)}px) scale(1.1) rotate(4deg); 
-            filter: brightness(1.5) drop-shadow(0 0 15px #ff8800);
+            filter: brightness(1.3);
             animation-timing-function: ease-in-out;
+        }}
+        75% {{
+            transform: translateY(0px) scale(1);
+            filter: brightness(1);
         }}
         100% {{ 
             transform: translateY(0px) scale(1); 
@@ -226,7 +230,7 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
         }}
     }}
 
-    /* 下方選手：0-15% 蓄力 -> 15-50% 全速加速衝刺(ease-in) -> 50% 碰觸最高速 -> 50-65% 震退彈回(ease-out) */
+    /* 下方選手：0-15% 蓄力 -> 15-50% 全速加速衝刺(ease-in) -> 50% 碰觸最高速 -> 50-65% 震退彈回(ease-out) -> 65-100% 絕對靜止 */
     @keyframes smashUp_{table_id} {{
         0% {{
             transform: translateY(0px) scale(1);
@@ -245,8 +249,12 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
         }}
         65% {{ 
             transform: translateY(-{int(distance_px * 0.35)}px) scale(1.1) rotate(-4deg); 
-            filter: brightness(1.5) drop-shadow(0 0 15px #00b0ff);
+            filter: brightness(1.3);
             animation-timing-function: ease-in-out;
+        }}
+        75% {{
+            transform: translateY(0px) scale(1);
+            filter: brightness(1);
         }}
         100% {{ 
             transform: translateY(0px) scale(1); 
@@ -254,7 +262,7 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
         }}
     }}
 
-    /* 中心大爆炸：49% 隱形 -> 50% 撞擊瞬間零時差爆發 -> 58% 快速消散 */
+    /* 中心大爆炸：49% 隱形 -> 50% 撞擊瞬間零時差爆發 -> 56% 快速消散 -> 57-100% 絕對隱形 */
     @keyframes explosionSupernova_{table_id} {{
         0%, 49% {{ 
             opacity: 0; 
@@ -270,7 +278,7 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
             transform: translate(-50%, -50%) scale(5.6) rotate(90deg); 
             box-shadow: 0 0 50px rgba(255,255,255,1), 0 0 90px rgba(255,69,0,0.8), 0 0 115px rgba(0,229,255,0.8);
         }}
-        58% {{ 
+        56% {{ 
             opacity: 0; 
             transform: translate(-50%, -50%) scale(7.0) rotate(140deg); 
         }}
@@ -285,7 +293,7 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
         position: relative;
         font-weight: 900;
         letter-spacing: 2px;
-        animation: smashDown_{table_id} 1.6s infinite;
+        animation: smashDown_{table_id} 1.8s infinite;
         z-index: 25;
     }}
 
@@ -294,7 +302,7 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
         position: relative;
         font-weight: 900;
         letter-spacing: 2px;
-        animation: smashUp_{table_id} 1.6s infinite;
+        animation: smashUp_{table_id} 1.8s infinite;
         z-index: 25;
     }}
 
@@ -307,29 +315,20 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
         border-radius: 50%;
         background: radial-gradient(circle, #ffffff 15%, #ffff77 35%, #ff4500 65%, #00e5ff 90%, transparent 100%);
         pointer-events: none;
-        animation: explosionSupernova_{table_id} 1.6s infinite;
+        animation: explosionSupernova_{table_id} 1.8s infinite;
         z-index: 999;
     }}
     </style>
     """
 
-# 注入電影級【流動烈焰・飄浮火星】與【極光冰霜・碎雪冰晶】CSS 樣式
+# 注入常態與粒子特效（對撞模式下關閉原點獨立閃爍）
 st.markdown("""
 <style>
 /* ================== 1. 陳俊丞：流動烈焰 + 升騰火星 ================== */
 @keyframes flameFlow {
-    0% {
-        background-position: 0% 50%;
-        filter: drop-shadow(0 0 4px #ff3300) drop-shadow(0 0 8px #ff9900);
-    }
-    50% {
-        background-position: 100% 50%;
-        filter: drop-shadow(0 0 8px #ff0000) drop-shadow(0 0 14px #ffff00);
-    }
-    100% {
-        background-position: 0% 50%;
-        filter: drop-shadow(0 0 4px #ff3300) drop-shadow(0 0 8px #ff9900);
-    }
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 @keyframes sparkRise1 {
     0%   { opacity: 0; transform: translate(0, 0) scale(0.4); }
@@ -383,18 +382,9 @@ st.markdown("""
 
 /* ================== 2. 葉臨恩：極光冰晶 + 旋轉碎雪 ================== */
 @keyframes iceAuroraFlow {
-    0% {
-        background-position: 0% 50%;
-        filter: drop-shadow(0 0 4px #00b0ff) drop-shadow(0 0 8px #00e5ff);
-    }
-    50% {
-        background-position: 100% 50%;
-        filter: drop-shadow(0 0 8px #0070f3) drop-shadow(0 0 14px #ffffff);
-    }
-    100% {
-        background-position: 0% 50%;
-        filter: drop-shadow(0 0 4px #00b0ff) drop-shadow(0 0 8px #00e5ff);
-    }
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 @keyframes snowDrift1 {
     0%   { opacity: 0; transform: translate(0, 0) rotate(0deg) scale(0.4); }
