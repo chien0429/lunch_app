@@ -218,79 +218,107 @@ st.markdown("""
     animation: iceGlow 1.4s infinite alternate ease-in-out;
 }
 
-/* 3. 俊丞（上方選手）跑位接球動畫 */
-@keyframes playerTopMove {
-    0%   { transform: translate(-40px, 0px) rotate(-6deg); }
-    25%  { transform: translate(30px, 4px) rotate(4deg); }
-    50%  { transform: translate(-20px, -3px) rotate(-3deg); }
-    75%  { transform: translate(50px, 2px) rotate(8deg); }
-    100% { transform: translate(-40px, 0px) rotate(-6deg); }
+/* 3. 俊丞（上方選手）左右滑步移動 */
+@keyframes playerTopSwing {
+    0%   { transform: translateX(-35px) rotate(-4deg); }
+    25%  { transform: translateX(20px) rotate(3deg); }
+    50%  { transform: translateX(-15px) rotate(-2deg); }
+    75%  { transform: translateX(35px) rotate(5deg); }
+    100% { transform: translateX(-35px) rotate(-4deg); }
 }
 .badminton-player-top {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    position: relative;
     font-weight: 900;
     color: #ff3300;
     letter-spacing: 2px;
-    text-shadow: 0 0 8px #ffcc00, 0 0 15px #ff0000;
-    animation: playerTopMove 2.4s infinite ease-in-out;
-    position: relative;
+    text-shadow: 0 0 6px #ffcc00;
+    animation: playerTopSwing 2.2s infinite ease-in-out;
     z-index: 10;
 }
 
-/* 4. 臨恩（下方選手）跑位接球動畫 */
-@keyframes playerBottomMove {
-    0%   { transform: translate(45px, 0px) rotate(6deg); }
-    25%  { transform: translate(-35px, -4px) rotate(-5deg); }
-    50%  { transform: translate(25px, 3px) rotate(4deg); }
-    75%  { transform: translate(-45px, -2px) rotate(-7deg); }
-    100% { transform: translate(45px, 0px) rotate(6deg); }
+/* 上方球拍揮動 */
+@keyframes racketTopHit {
+    0%, 100% { transform: rotate(0deg); }
+    10% { transform: rotate(-35deg) scale(1.2); }
+    50% { transform: rotate(10deg); }
+}
+.racket-top {
+    display: inline-block;
+    font-size: 18px;
+    margin-left: 6px;
+    animation: racketTopHit 2.2s infinite ease-in-out;
+}
+
+/* 4. 臨恩（下方選手）左右滑步移動 */
+@keyframes playerBottomSwing {
+    0%   { transform: translateX(35px) rotate(4deg); }
+    25%  { transform: translateX(-25px) rotate(-3deg); }
+    50%  { transform: translateX(15px) rotate(2deg); }
+    75%  { transform: translateX(-35px) rotate(-5deg); }
+    100% { transform: translateX(35px) rotate(4deg); }
 }
 .badminton-player-bottom {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    position: relative;
     font-weight: 900;
     color: #00b0ff;
     letter-spacing: 2px;
-    text-shadow: 0 0 8px #80d8ff, 0 0 15px #0070f3;
-    animation: playerBottomMove 2.4s infinite ease-in-out;
-    position: relative;
+    text-shadow: 0 0 6px #80d8ff;
+    animation: playerBottomSwing 2.2s infinite ease-in-out;
     z-index: 10;
 }
 
-/* 5. 羽毛球（🏸）在上方與下方之間來回飛行對打 */
-@keyframes shuttlecockRally {
+/* 下方球拍揮動 */
+@keyframes racketBottomHit {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(-35deg) scale(1.2); }
+    60% { transform: rotate(10deg); }
+}
+.racket-bottom {
+    display: inline-block;
+    font-size: 18px;
+    margin-left: 6px;
+    animation: racketBottomHit 2.2s infinite ease-in-out;
+}
+
+/* 5. 真正的羽毛球（🏸）：在俊丞球拍與臨恩球拍之間來回飛舞 */
+@keyframes shuttlecockFlight {
     0% {
-        /* 上方俊丞擊球點 */
-        transform: translate(-30px, 8px) scale(0.9) rotate(160deg);
+        /* 上方俊丞球拍位置 */
+        transform: translate(65px, 6px) scale(0.9) rotate(160deg);
         filter: drop-shadow(0 0 6px #ff3b00);
     }
     45% {
-        /* 飛向下方臨恩 (弧線過渡) */
-        transform: translate(25px, 55px) scale(1.2) rotate(190deg);
-        filter: drop-shadow(0 0 8px #ffff00);
+        /* 飛向下方的弧線 */
+        transform: translate(95px, 35px) scale(1.2) rotate(195deg);
+        filter: drop-shadow(0 0 8px #ffcc00);
     }
     50% {
-        /* 下方臨恩擊球點 (扣殺反彈) */
-        transform: translate(35px, 75px) scale(1.4) rotate(15deg);
+        /* 下方臨恩球拍位置 (接球反彈) */
+        transform: translate(85px, 60px) scale(1.3) rotate(15deg);
         filter: drop-shadow(0 0 10px #00e5ff);
     }
     95% {
-        /* 飛回上方俊丞 */
-        transform: translate(-20px, 20px) scale(1.1) rotate(-20deg);
+        /* 飛回上方的弧線 */
+        transform: translate(45px, 25px) scale(1.1) rotate(-25deg);
         filter: drop-shadow(0 0 8px #80d8ff);
     }
     100% {
-        transform: translate(-30px, 8px) scale(0.9) rotate(160deg);
+        transform: translate(65px, 6px) scale(0.9) rotate(160deg);
         filter: drop-shadow(0 0 6px #ff3b00);
     }
 }
-.shuttlecock-ball {
+.flying-shuttlecock {
     position: absolute;
     top: 50%;
-    left: 45%;
-    font-size: 20px;
+    left: 0;
+    font-size: 18px;
     line-height: 1;
     pointer-events: none;
-    animation: shuttlecockRally 2.4s infinite ease-in-out;
+    animation: shuttlecockFlight 2.2s infinite ease-in-out;
     z-index: 999;
 }
 
@@ -391,7 +419,7 @@ if not orders_df.empty:
     st.markdown("**【每人應收金額】**")
     person_df = orders_df.groupby("姓名")["金額"].sum().reset_index(name="應付金額")
     
-    # 兩人都點餐時：自動將俊丞排在上方、臨恩排在下方，進行羽毛球對打！
+    # 兩人都點餐時：自動將俊丞排在上方、臨恩排在下方，展開羽毛球對打！
     if is_playing_badminton:
         chen_row = person_df[person_df["姓名"].str.contains("俊丞", na=False)]
         yeh_row = person_df[person_df["姓名"].str.contains("臨恩", na=False)]
@@ -403,14 +431,14 @@ if not orders_df.empty:
         name_str = str(row["姓名"])
         if "俊丞" in name_str:
             if is_playing_badminton:
-                # 俊丞在上方揮拍 + 生成羽毛球
-                name_display = f'<span class="badminton-player-top">{name_str}</span><span class="shuttlecock-ball">🏸</span>'
+                # 俊丞持球拍 + 飛行的羽毛球
+                name_display = f'<span class="badminton-player-top">{name_str}<span class="racket-top">🏸</span><span class="flying-shuttlecock">🏸</span></span>'
             else:
                 name_display = f'<span class="flame-solo">{name_str}</span>'
         elif "臨恩" in name_str:
             if is_playing_badminton:
-                # 臨恩在下方揮拍接球
-                name_display = f'<span class="badminton-player-bottom">{name_str}</span>'
+                # 臨恩持球拍
+                name_display = f'<span class="badminton-player-bottom">{name_str}<span class="racket-bottom">🏸</span></span>'
             else:
                 name_display = f'<span class="ice-solo">{name_str}</span>'
         else:
@@ -427,12 +455,12 @@ if not orders_df.empty:
         name_str = str(row["姓名"])
         if "俊丞" in name_str:
             if is_playing_badminton:
-                name_display = f'<span class="badminton-player-top">{name_str}</span>'
+                name_display = f'<span class="badminton-player-top">{name_str}<span class="racket-top">🏸</span></span>'
             else:
                 name_display = f'<span class="flame-solo">{name_str}</span>'
         elif "臨恩" in name_str:
             if is_playing_badminton:
-                name_display = f'<span class="badminton-player-bottom">{name_str}</span>'
+                name_display = f'<span class="badminton-player-bottom">{name_str}<span class="racket-bottom">🏸</span></span>'
             else:
                 name_display = f'<span class="ice-solo">{name_str}</span>'
         else:
