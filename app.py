@@ -112,7 +112,7 @@ RESTAURANT_MENUS = {
         "黃金蕎麥那提(L)": 60, "日式抹茶初雪": 50, "黑糖抹茶初雪": 55, "關山黑糖那提": 55,
         "黑糖竹薑茶": 45, "黑糖竹薑那提": 50, "蜜香竹薑茶": 40, "加料: 梅子": 5,
         "加料: 桂花釀": 10, "加料: 黑糖波霸/珍珠/QQ": 15, "加料: 愛玉凍/仙草凍/布丁/多多": 15,
-        "加料: 冰淇淋/黑糖Q凍/桂花凍/青梅凍": 20, "加料: 牛牛奶/蜂蜜": 25,
+        "加料: 冰淇淋/黑糖Q凍/桂花凍/青梅凍": 20, "加料: 牛奶/蜂蜜": 25,
     },
     "龍饌食堂": {
         "土雞肉飯便當": 110, "土雞腿肉飯便當": 150, "客家焢肉飯便當": 110, "冰糖豬腳飯便當": 140,
@@ -201,54 +201,54 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=52):
     /* 上方選手：精確俯衝到中心點 */
     @keyframes smashDown_{table_id} {{
         0% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
-        30% {{ transform: translateY(-10px) scale(0.95); filter: brightness(1.2); }}
+        25% {{ transform: translateY(-10px) scale(0.95); filter: brightness(1.2); }}
         50% {{ 
             transform: translateY({distance_px}px) scale(1.35) rotate(-4deg); 
-            filter: brightness(2.2) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #ff3300);
+            filter: brightness(2.5) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #ff3300);
         }}
         58% {{ 
             transform: translateY({int(distance_px * 0.65)}px) scale(1.1) rotate(5deg); 
             filter: brightness(1.6) drop-shadow(0 0 15px #ff8800);
         }}
-        72% {{ transform: translateY({int(distance_px * 0.15)}px) scale(1.02); }}
+        75% {{ transform: translateY({int(distance_px * 0.15)}px) scale(1.02); }}
         100% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
     }}
 
     /* 下方選手：精確拔地衝天到中心點 */
     @keyframes smashUp_{table_id} {{
         0% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
-        30% {{ transform: translateY(10px) scale(0.95); filter: brightness(1.2); }}
+        25% {{ transform: translateY(10px) scale(0.95); filter: brightness(1.2); }}
         50% {{ 
             transform: translateY(-{distance_px}px) scale(1.35) rotate(4deg); 
-            filter: brightness(2.2) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #00e5ff);
+            filter: brightness(2.5) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #00e5ff);
         }}
         58% {{ 
             transform: translateY(-{int(distance_px * 0.65)}px) scale(1.1) rotate(-5deg); 
             filter: brightness(1.6) drop-shadow(0 0 15px #00b0ff);
         }}
-        72% {{ transform: translateY(-{int(distance_px * 0.15)}px) scale(1.02); }}
+        75% {{ transform: translateY(-{int(distance_px * 0.15)}px) scale(1.02); }}
         100% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
     }}
 
-    /* 中心相撞點引爆超新星爆炸 */
+    /* 爆炸衝擊波（位於上方選手中心，隨上方選手抵達碰撞點時原地引爆，不再重複位移） */
     @keyframes explosionBurst_{table_id} {{
-        0%, 46% {{ 
+        0%, 44% {{ 
             opacity: 0; 
-            transform: translate(-50%, -50%) translateY({distance_px}px) scale(0.1); 
+            transform: translate(-50%, -50%) scale(0.1); 
         }}
         50% {{ 
             opacity: 1; 
-            transform: translate(-50%, -50%) translateY({distance_px}px) scale(3.5); 
+            transform: translate(-50%, -50%) scale(3.5); 
             box-shadow: 0 0 35px #ffffff, 0 0 60px #ffea00, 0 0 90px #ff3300, 0 0 110px #00e5ff;
         }}
-        62% {{ 
-            opacity: 0.85; 
-            transform: translate(-50%, -50%) translateY({distance_px}px) scale(4.5); 
-            box-shadow: 0 0 45px rgba(255,255,255,0.9), 0 0 75px rgba(255,69,0,0.6), 0 0 95px rgba(0,229,255,0.6);
+        60% {{ 
+            opacity: 0.9; 
+            transform: translate(-50%, -50%) scale(4.8); 
+            box-shadow: 0 0 45px rgba(255,255,255,0.9), 0 0 80px rgba(255,69,0,0.7), 0 0 100px rgba(0,229,255,0.7);
         }}
         75%, 100% {{ 
             opacity: 0; 
-            transform: translate(-50%, -50%) translateY({distance_px}px) scale(5.5); 
+            transform: translate(-50%, -50%) scale(6.0); 
         }}
     }}
 
@@ -474,16 +474,20 @@ if not orders_df.empty:
         if "俊丞" in name_str:
             if is_clashing and d_chen_idx is not None and d_yeh_idx is not None:
                 if d_chen_idx < d_yeh_idx:
+                    # 俊丞在上：向下俯衝 + 攜帶中心大爆炸
                     name_display = f'<span class="smash-top-detail" style="color:#ff3b00;">{name_str}<span class="explosion-core-detail"></span></span>'
                 else:
+                    # 俊丞在下：向上衝天
                     name_display = f'<span class="smash-bottom-detail" style="color:#ff3b00;">{name_str}</span>'
             else:
                 name_display = f'<span class="flame-solo">{name_str}</span>'
         elif "臨恩" in name_str:
             if is_clashing and d_chen_idx is not None and d_yeh_idx is not None:
                 if d_yeh_idx < d_chen_idx:
+                    # 臨恩在上：向下俯衝 + 攜帶中心大爆炸
                     name_display = f'<span class="smash-top-detail" style="color:#00b0ff;">{name_str}<span class="explosion-core-detail"></span></span>'
                 else:
+                    # 臨恩在下：向上衝天
                     name_display = f'<span class="smash-bottom-detail" style="color:#00b0ff;">{name_str}</span>'
             else:
                 name_display = f'<span class="ice-solo">{name_str}</span>'
