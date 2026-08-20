@@ -189,124 +189,173 @@ RESTAURANT_MENUS = {
     }
 }
 
-# 注入強烈顯色 CSS（帶專屬深色能量底框，白底也能清楚看見烈焰與極冰）
+# 注入隔空火球與冰錐射擊對決 CSS
 st.markdown("""
 <style>
-/* 1. 俊丞常態：烈焰燃燒膠囊 */
-@keyframes flameAura {
-    0% {
-        box-shadow: 0 0 10px #ff3300, 0 0 20px #ff6600, inset 0 0 8px #ffcc00;
-        border-color: #ff3300;
-    }
-    50% {
-        box-shadow: 0 0 18px #ff0000, 0 0 28px #ff9900, inset 0 0 14px #ffff00;
-        border-color: #ffaa00;
-    }
-    100% {
-        box-shadow: 0 0 10px #ff3300, 0 0 20px #ff6600, inset 0 0 8px #ffcc00;
-        border-color: #ff3300;
-    }
-}
-.flame-box {
-    display: inline-block;
-    background: linear-gradient(135deg, #1f0500, #3d0a00);
-    color: #fff3e0 !important;
-    font-weight: 900;
-    padding: 4px 12px;
-    border-radius: 8px;
-    border: 1.5px solid #ff4500;
-    letter-spacing: 2px;
-    text-shadow: 0 0 6px #ffe600, 0 -2px 8px #ff3b00, 0 -5px 12px #ff0000;
-    animation: flameAura 1.2s infinite alternate ease-in-out;
+/* 容器定位 */
+.battle-wrapper {
+    position: relative;
+    width: 100%;
 }
 
-/* 2. 臨恩常態：極寒冰霜膠囊 */
-@keyframes iceAura {
+/* 1. 俊丞常態：烈焰燃燒字體 */
+@keyframes flameTextGlow {
     0% {
-        box-shadow: 0 0 10px #00b0ff, 0 0 20px #00e5ff, inset 0 0 8px #e0f7fa;
-        border-color: #00e5ff;
+        color: #ff3b00;
+        text-shadow: 0 0 4px #ffaa00, 0 -2px 8px #ff2200, 0 -4px 12px #d00000;
     }
     50% {
-        box-shadow: 0 0 18px #0070f3, 0 0 28px #80d8ff, inset 0 0 14px #ffffff;
-        border-color: #ffffff;
+        color: #ff8800;
+        text-shadow: 0 0 8px #ffff00, 0 -3px 12px #ff4400, 0 -7px 18px #990000;
     }
     100% {
-        box-shadow: 0 0 10px #00b0ff, 0 0 20px #00e5ff, inset 0 0 8px #e0f7fa;
-        border-color: #00e5ff;
+        color: #ff3b00;
+        text-shadow: 0 0 4px #ffaa00, 0 -2px 8px #ff2200, 0 -4px 12px #d00000;
     }
 }
-.ice-box {
+.flame-name {
     display: inline-block;
-    background: linear-gradient(135deg, #001220, #002244);
-    color: #e0f7fa !important;
+    position: relative;
     font-weight: 900;
-    padding: 4px 12px;
-    border-radius: 8px;
-    border: 1.5px solid #00e5ff;
     letter-spacing: 2px;
-    text-shadow: 0 0 6px #80d8ff, 0 0 12px #00b0ff, 0 0 18px #0070f3;
-    animation: iceAura 1.4s infinite alternate ease-in-out;
+    animation: flameTextGlow 1.2s infinite alternate ease-in-out;
 }
 
-/* 3. 冰火激突對撞模式（兩人都點餐時觸發） */
-@keyframes clashFlame {
+/* 2. 臨恩常態：極寒冰霜字體 */
+@keyframes iceTextGlow {
     0% {
-        transform: scale(1.02);
-        box-shadow: 0 0 12px #ff2200, 8px 0 18px #00e5ff, inset 0 0 10px #ffcc00;
-        border-color: #ff2200;
+        color: #0091ea;
+        text-shadow: 0 0 4px #80d8ff, 0 0 8px #00e5ff, 0 0 14px #2979ff;
     }
     50% {
-        transform: scale(1.06);
-        box-shadow: 0 0 25px #ff5500, 15px 0 28px #00b0ff, inset 0 0 18px #ffffff;
-        border-color: #ffffff;
+        color: #00e5ff;
+        text-shadow: 0 0 8px #ffffff, 0 0 14px #00b0ff, 0 0 20px #0070f3;
     }
     100% {
-        transform: scale(1.02);
-        box-shadow: 0 0 12px #ff2200, 8px 0 18px #00e5ff, inset 0 0 10px #ffcc00;
-        border-color: #ff2200;
+        color: #0091ea;
+        text-shadow: 0 0 4px #80d8ff, 0 0 8px #00e5ff, 0 0 14px #2979ff;
     }
 }
-.clash-flame-box {
+.ice-name {
     display: inline-block;
-    background: linear-gradient(90deg, #300000 0%, #1a0022 100%);
-    color: #ffffff !important;
+    position: relative;
     font-weight: 900;
-    padding: 4px 14px;
-    border-radius: 8px;
-    border: 2px solid #ff4500;
     letter-spacing: 2px;
-    text-shadow: 0 0 6px #ffea00, 0 0 12px #ff3300, 4px 0 15px #00e5ff;
-    animation: clashFlame 0.6s infinite alternate ease-in-out;
+    animation: iceTextGlow 1.4s infinite alternate ease-in-out;
 }
 
-@keyframes clashIce {
+/* 3. 隔空射擊對轟：火球彈道 (發射向右下/右上) */
+@keyframes shootFireball {
     0% {
-        transform: scale(1.02);
-        box-shadow: 0 0 12px #00b0ff, -8px 0 18px #ff4500, inset 0 0 10px #e0f7fa;
-        border-color: #00e5ff;
+        opacity: 0;
+        transform: translate(0, 0) scale(0.4) rotate(0deg);
+        box-shadow: 0 0 0 rgba(255, 69, 0, 0);
     }
-    50% {
-        transform: scale(1.06);
-        box-shadow: 0 0 25px #00e5ff, -15px 0 28px #ff2200, inset 0 0 18px #ffffff;
-        border-color: #ffffff;
+    20% {
+        opacity: 1;
+        transform: translate(30px, 15px) scale(1) rotate(45deg);
+        box-shadow: 0 0 15px #ff4500, 0 0 25px #ffcc00;
+    }
+    80% {
+        opacity: 1;
+        transform: translate(140px, 50px) scale(1.2) rotate(180deg);
+        box-shadow: 0 0 20px #ff2200, 0 0 35px #ffff00;
+    }
+    95% {
+        opacity: 1;
+        transform: translate(175px, 60px) scale(1.8) rotate(270deg);
+        box-shadow: 0 0 35px #ffffff, 0 0 50px #ff0000;
     }
     100% {
-        transform: scale(1.02);
-        box-shadow: 0 0 12px #00b0ff, -8px 0 18px #ff4500, inset 0 0 10px #e0f7fa;
-        border-color: #00e5ff;
+        opacity: 0;
+        transform: translate(185px, 62px) scale(2.2);
+        box-shadow: 0 0 40px rgba(255, 255, 255, 0);
     }
 }
-.clash-ice-box {
-    display: inline-block;
-    background: linear-gradient(90deg, #1a0022 0%, #001a33 100%);
-    color: #ffffff !important;
-    font-weight: 900;
-    padding: 4px 14px;
-    border-radius: 8px;
-    border: 2px solid #00e5ff;
-    letter-spacing: 2px;
-    text-shadow: 0 0 6px #80d8ff, 0 0 12px #0070f3, -4px 0 15px #ff4500;
-    animation: clashIce 0.6s infinite alternate ease-in-out;
+
+.fireball-missile {
+    position: absolute;
+    top: 50%;
+    right: -25px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #ffffff 10%, #ffee55 35%, #ff4500 70%, #990000 100%);
+    pointer-events: none;
+    animation: shootFireball 1.8s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    z-index: 999;
+}
+
+/* 4. 隔空射擊對轟：冰錐彈道 (發射向左上/左下) */
+@keyframes shootIceShard {
+    0% {
+        opacity: 0;
+        transform: translate(0, 0) scale(0.4) rotate(0deg);
+        box-shadow: 0 0 0 rgba(0, 229, 255, 0);
+    }
+    20% {
+        opacity: 1;
+        transform: translate(-30px, -15px) scale(1) rotate(-45deg);
+        box-shadow: 0 0 15px #00e5ff, 0 0 25px #80d8ff;
+    }
+    80% {
+        opacity: 1;
+        transform: translate(-140px, -50px) scale(1.2) rotate(-180deg);
+        box-shadow: 0 0 20px #00b0ff, 0 0 35px #ffffff;
+    }
+    95% {
+        opacity: 1;
+        transform: translate(-175px, -60px) scale(1.8) rotate(-270deg);
+        box-shadow: 0 0 35px #ffffff, 0 0 50px #00e5ff;
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-185px, -62px) scale(2.2);
+        box-shadow: 0 0 40px rgba(255, 255, 255, 0);
+    }
+}
+
+.ice-shard-missile {
+    position: absolute;
+    top: 50%;
+    left: -25px;
+    width: 18px;
+    height: 18px;
+    border-radius: 20% 80% 20% 80%;
+    background: radial-gradient(circle, #ffffff 15%, #b3e5fc 40%, #00b0ff 75%, #01579b 100%);
+    pointer-events: none;
+    animation: shootIceShard 1.8s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    z-index: 999;
+}
+
+/* 5. 碰撞炸裂衝擊光環 */
+@keyframes clashExplosion {
+    0%, 75% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    85% {
+        opacity: 1;
+        transform: scale(1.4);
+        box-shadow: 0 0 25px #ffffff, 0 0 40px #ff3300, 0 0 40px #00e5ff;
+    }
+    100% {
+        opacity: 0;
+        transform: scale(2.2);
+        box-shadow: 0 0 50px rgba(255,255,255,0);
+    }
+}
+.impact-explosion {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #ffffff 20%, #ffff77 40%, #ff4500 70%, #00e5ff 100%);
+    pointer-events: none;
+    animation: clashExplosion 1.8s infinite ease-out;
+    z-index: 1000;
 }
 
 .custom-table {
@@ -314,6 +363,7 @@ st.markdown("""
     border-collapse: collapse;
     margin-bottom: 20px;
     font-size: 15px;
+    position: relative;
 }
 .custom-table th, .custom-table td {
     padding: 12px 10px;
@@ -386,7 +436,7 @@ st.subheader("📊 目前點餐狀況與統計")
 orders_df = load_orders()
 
 if not orders_df.empty:
-    # 判斷是否兩人都已點餐（動態切換對撞模式）
+    # 判斷是否兩人都已點餐（觸發隔空射擊）
     has_chen = any("俊丞" in str(name) for name in orders_df["姓名"])
     has_yeh = any("臨恩" in str(name) for name in orders_df["姓名"])
     is_clashing = has_chen and has_yeh
@@ -402,37 +452,39 @@ if not orders_df.empty:
     summary_df = orders_df.groupby(["店家", "餐點"]).size().reset_index(name="數量")
     st.table(summary_df)
 
-    # 格式化人名函數（帶深色能量底框，確保白底完全顯色）
+    # 格式化人名函數（隔空丟火球 vs 射冰錐）
     def render_name(name):
         name_str = str(name)
         if "俊丞" in name_str:
             if is_clashing:
-                return f'<span class="clash-flame-box">{name_str}</span>'
-            return f'<span class="flame-box">{name_str}</span>'
+                # 隔空發射火球 + 碰撞爆炸
+                return f'<span class="flame-name">{name_str}<span class="fireball-missile"></span><span class="impact-explosion"></span></span>'
+            return f'<span class="flame-name">{name_str}</span>'
         elif "臨恩" in name_str:
             if is_clashing:
-                return f'<span class="clash-ice-box">{name_str}</span>'
-            return f'<span class="ice-box">{name_str}</span>'
+                # 隔空發射冰錐
+                return f'<span class="ice-name">{name_str}<span class="ice-shard-missile"></span></span>'
+            return f'<span class="ice-name">{name_str}</span>'
         return name_str
 
     # 2. 依人名統計每人應付金額
     st.markdown("**【每人應收金額】**")
     person_df = orders_df.groupby("姓名")["金額"].sum().reset_index(name="應付金額")
     
-    person_html = '<table class="custom-table"><thead><tr><th>姓名</th><th>應付金額</th></tr></thead><tbody>'
+    person_html = '<div class="battle-wrapper"><table class="custom-table"><thead><tr><th>姓名</th><th>應付金額</th></tr></thead><tbody>'
     for _, row in person_df.iterrows():
         name_html = render_name(row["姓名"])
         person_html += f'<tr><td>{name_html}</td><td>${row["應付金額"]} 元</td></tr>'
-    person_html += '</tbody></table>'
+    person_html += '</tbody></table></div>'
     st.markdown(person_html, unsafe_allow_html=True)
 
     # 3. 詳細點餐名冊
     st.markdown("**【詳細點餐名冊】**")
-    detail_html = '<table class="custom-table"><thead><tr><th>店家</th><th>姓名</th><th>餐點</th><th>金額</th><th>備註</th></tr></thead><tbody>'
+    detail_html = '<div class="battle-wrapper"><table class="custom-table"><thead><tr><th>店家</th><th>姓名</th><th>餐點</th><th>金額</th><th>備註</th></tr></thead><tbody>'
     for _, row in orders_df.iterrows():
         name_html = render_name(row["姓名"])
         detail_html += f'<tr><td>{row["店家"]}</td><td>{name_html}</td><td>{row["餐點"]}</td><td>${row["金額"]}</td><td>{row["備註"]}</td></tr>'
-    detail_html += '</tbody></table>'
+    detail_html += '</tbody></table></div>'
     st.markdown(detail_html, unsafe_allow_html=True)
 
     # --- 刪除特定訂單功能（含密碼保護） ---
