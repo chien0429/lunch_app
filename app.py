@@ -189,7 +189,7 @@ RESTAURANT_MENUS = {
     }
 }
 
-# 動態產生零延遲、對稱相撞大爆炸 CSS（約 37.5% 關鍵幀相撞引爆）
+# 動態產生零延遲、對稱相撞大爆炸 CSS（50% 絕對咬合點）
 def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
     if top_idx is None or btm_idx is None or top_idx == btm_idx:
         return ""
@@ -198,65 +198,81 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
     
     return f"""
     <style>
-    /* 上方選手：0-14% 蓄力 -> 14-37% 衝刺 -> 37% 正好抵達中心相撞 -> 37-50% 震退 -> 100% 回位 */
+    /* 上方選手：0-15% 蓄力 -> 15-50% 全速加速衝刺(ease-in) -> 50% 碰觸最高速 -> 50-65% 震退彈回(ease-out) */
     @keyframes smashDown_{table_id} {{
-        0% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
-        14% {{ transform: translateY(-8px) scale(0.96); filter: brightness(1.2); }}
-        36% {{ 
-            transform: translateY({distance_px}px) scale(1.35) rotate(-3deg); 
-            filter: brightness(2.8) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #ff3300);
+        0% {{
+            transform: translateY(0px) scale(1);
+            filter: brightness(1);
+            animation-timing-function: ease-out;
         }}
-        39% {{ 
-            transform: translateY({distance_px}px) scale(1.35) rotate(-3deg); 
-            filter: brightness(2.8) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #ff3300);
+        15% {{
+            transform: translateY(-10px) scale(0.95);
+            filter: brightness(1.2);
+            animation-timing-function: ease-in;
         }}
         50% {{ 
-            transform: translateY({int(distance_px * 0.4)}px) scale(1.1) rotate(4deg); 
+            transform: translateY({distance_px}px) scale(1.35) rotate(-3deg); 
+            filter: brightness(2.8) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #ff3300);
+            animation-timing-function: ease-out;
+        }}
+        65% {{ 
+            transform: translateY({int(distance_px * 0.35)}px) scale(1.1) rotate(4deg); 
             filter: brightness(1.5) drop-shadow(0 0 15px #ff8800);
+            animation-timing-function: ease-in-out;
         }}
-        68% {{ transform: translateY({int(distance_px * 0.06)}px) scale(1.02); }}
-        100% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
+        100% {{ 
+            transform: translateY(0px) scale(1); 
+            filter: brightness(1); 
+        }}
     }}
 
-    /* 下方選手：0-14% 蓄力 -> 14-37% 衝刺 -> 37% 正好抵達中心相撞 -> 37-50% 震退 -> 100% 回位 */
+    /* 下方選手：0-15% 蓄力 -> 15-50% 全速加速衝刺(ease-in) -> 50% 碰觸最高速 -> 50-65% 震退彈回(ease-out) */
     @keyframes smashUp_{table_id} {{
-        0% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
-        14% {{ transform: translateY(8px) scale(0.96); filter: brightness(1.2); }}
-        36% {{ 
-            transform: translateY(-{distance_px}px) scale(1.35) rotate(3deg); 
-            filter: brightness(2.8) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #00e5ff);
+        0% {{
+            transform: translateY(0px) scale(1);
+            filter: brightness(1);
+            animation-timing-function: ease-out;
         }}
-        39% {{ 
-            transform: translateY(-{distance_px}px) scale(1.35) rotate(3deg); 
-            filter: brightness(2.8) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #00e5ff);
+        15% {{
+            transform: translateY(10px) scale(0.95);
+            filter: brightness(1.2);
+            animation-timing-function: ease-in;
         }}
         50% {{ 
-            transform: translateY(-{int(distance_px * 0.4)}px) scale(1.1) rotate(-4deg); 
-            filter: brightness(1.5) drop-shadow(0 0 15px #00b0ff);
+            transform: translateY(-{distance_px}px) scale(1.35) rotate(3deg); 
+            filter: brightness(2.8) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #00e5ff);
+            animation-timing-function: ease-out;
         }}
-        68% {{ transform: translateY(-{int(distance_px * 0.06)}px) scale(1.02); }}
-        100% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
+        65% {{ 
+            transform: translateY(-{int(distance_px * 0.35)}px) scale(1.1) rotate(-4deg); 
+            filter: brightness(1.5) drop-shadow(0 0 15px #00b0ff);
+            animation-timing-function: ease-in-out;
+        }}
+        100% {{ 
+            transform: translateY(0px) scale(1); 
+            filter: brightness(1); 
+        }}
     }}
 
-    /* 中心大爆炸：37% 相撞瞬間零時差爆發，42% 擴散，45% 快速消散 */
-    @keyframes explosionBurst_{table_id} {{
-        0%, 34% {{ 
+    /* 中心大爆炸：49% 隱形 -> 50% 撞擊瞬間零時差爆發 -> 58% 快速消散 */
+    @keyframes explosionSupernova_{table_id} {{
+        0%, 49% {{ 
             opacity: 0; 
-            transform: translate(-50%, -50%) scale(0.1); 
+            transform: translate(-50%, -50%) scale(0.1) rotate(0deg); 
         }}
-        37% {{ 
+        50% {{ 
             opacity: 1; 
-            transform: translate(-50%, -50%) scale(3.5) rotate(45deg); 
+            transform: translate(-50%, -50%) scale(3.8) rotate(45deg); 
             box-shadow: 0 0 35px #ffffff, 0 0 70px #ffea00, 0 0 100px #ff3300, 0 0 120px #00e5ff;
         }}
-        41% {{ 
-            opacity: 0.9; 
-            transform: translate(-50%, -50%) scale(5.5) rotate(90deg); 
+        54% {{ 
+            opacity: 0.85; 
+            transform: translate(-50%, -50%) scale(5.6) rotate(90deg); 
             box-shadow: 0 0 50px rgba(255,255,255,1), 0 0 90px rgba(255,69,0,0.8), 0 0 115px rgba(0,229,255,0.8);
         }}
-        45% {{ 
+        58% {{ 
             opacity: 0; 
-            transform: translate(-50%, -50%) scale(6.5) rotate(140deg); 
+            transform: translate(-50%, -50%) scale(7.0) rotate(140deg); 
         }}
         100% {{ 
             opacity: 0; 
@@ -269,7 +285,7 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
         position: relative;
         font-weight: 900;
         letter-spacing: 2px;
-        animation: smashDown_{table_id} 1.5s infinite linear;
+        animation: smashDown_{table_id} 1.6s infinite;
         z-index: 25;
     }}
 
@@ -278,7 +294,7 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
         position: relative;
         font-weight: 900;
         letter-spacing: 2px;
-        animation: smashUp_{table_id} 1.5s infinite linear;
+        animation: smashUp_{table_id} 1.6s infinite;
         z-index: 25;
     }}
 
@@ -291,7 +307,7 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
         border-radius: 50%;
         background: radial-gradient(circle, #ffffff 15%, #ffff77 35%, #ff4500 65%, #00e5ff 90%, transparent 100%);
         pointer-events: none;
-        animation: explosionBurst_{table_id} 1.5s infinite linear;
+        animation: explosionSupernova_{table_id} 1.6s infinite;
         z-index: 999;
     }}
     </style>
