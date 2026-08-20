@@ -189,246 +189,109 @@ RESTAURANT_MENUS = {
     }
 }
 
-# 注入動態對撞彈道 CSS
+# 注入羽毛球對打特效 CSS
 st.markdown("""
 <style>
-/* 1. 俊丞常態：烈焰燃燒字體 */
-@keyframes flameTextGlow {
-    0% {
-        color: #ff3b00;
-        text-shadow: 0 0 4px #ffaa00, 0 -2px 8px #ff2200, 0 -4px 12px #d00000;
-    }
-    50% {
-        color: #ff8800;
-        text-shadow: 0 0 8px #ffff00, 0 -3px 12px #ff4400, 0 -7px 18px #990000;
-    }
-    100% {
-        color: #ff3b00;
-        text-shadow: 0 0 4px #ffaa00, 0 -2px 8px #ff2200, 0 -4px 12px #d00000;
-    }
+/* 1. 常態烈焰字體（僅俊丞一人時） */
+@keyframes flameGlow {
+    0% { color: #ff3b00; text-shadow: 0 0 4px #ffaa00, 0 -2px 8px #ff2200; }
+    50% { color: #ff8800; text-shadow: 0 0 8px #ffff00, 0 -3px 12px #ff4400; }
+    100% { color: #ff3b00; text-shadow: 0 0 4px #ffaa00, 0 -2px 8px #ff2200; }
 }
-.flame-name {
+.flame-solo {
     display: inline-block;
-    position: relative;
     font-weight: 900;
     letter-spacing: 2px;
-    animation: flameTextGlow 1.2s infinite alternate ease-in-out;
+    animation: flameGlow 1.2s infinite alternate ease-in-out;
 }
 
-/* 2. 臨恩常態：極寒冰霜字體 */
-@keyframes iceTextGlow {
-    0% {
-        color: #0091ea;
-        text-shadow: 0 0 4px #80d8ff, 0 0 8px #00e5ff, 0 0 14px #2979ff;
-    }
-    50% {
-        color: #00e5ff;
-        text-shadow: 0 0 8px #ffffff, 0 0 14px #00b0ff, 0 0 20px #0070f3;
-    }
-    100% {
-        color: #0091ea;
-        text-shadow: 0 0 4px #80d8ff, 0 0 8px #00e5ff, 0 0 14px #2979ff;
-    }
+/* 2. 常態極冰字體（僅臨恩一人時） */
+@keyframes iceGlow {
+    0% { color: #0091ea; text-shadow: 0 0 4px #80d8ff, 0 0 8px #00e5ff; }
+    50% { color: #00e5ff; text-shadow: 0 0 8px #ffffff, 0 0 14px #00b0ff; }
+    100% { color: #0091ea; text-shadow: 0 0 4px #80d8ff, 0 0 8px #00e5ff; }
 }
-.ice-name {
+.ice-solo {
     display: inline-block;
-    position: relative;
     font-weight: 900;
     letter-spacing: 2px;
-    animation: iceTextGlow 1.4s infinite alternate ease-in-out;
+    animation: iceGlow 1.4s infinite alternate ease-in-out;
 }
 
-/* 火球彈道：向下發射 (Shooting DOWN) */
-@keyframes shootFireDown {
+/* 3. 俊丞（上方選手）跑位接球動畫 */
+@keyframes playerTopMove {
+    0%   { transform: translate(-40px, 0px) rotate(-6deg); }
+    25%  { transform: translate(30px, 4px) rotate(4deg); }
+    50%  { transform: translate(-20px, -3px) rotate(-3deg); }
+    75%  { transform: translate(50px, 2px) rotate(8deg); }
+    100% { transform: translate(-40px, 0px) rotate(-6deg); }
+}
+.badminton-player-top {
+    display: inline-block;
+    font-weight: 900;
+    color: #ff3300;
+    letter-spacing: 2px;
+    text-shadow: 0 0 8px #ffcc00, 0 0 15px #ff0000;
+    animation: playerTopMove 2.4s infinite ease-in-out;
+    position: relative;
+    z-index: 10;
+}
+
+/* 4. 臨恩（下方選手）跑位接球動畫 */
+@keyframes playerBottomMove {
+    0%   { transform: translate(45px, 0px) rotate(6deg); }
+    25%  { transform: translate(-35px, -4px) rotate(-5deg); }
+    50%  { transform: translate(25px, 3px) rotate(4deg); }
+    75%  { transform: translate(-45px, -2px) rotate(-7deg); }
+    100% { transform: translate(45px, 0px) rotate(6deg); }
+}
+.badminton-player-bottom {
+    display: inline-block;
+    font-weight: 900;
+    color: #00b0ff;
+    letter-spacing: 2px;
+    text-shadow: 0 0 8px #80d8ff, 0 0 15px #0070f3;
+    animation: playerBottomMove 2.4s infinite ease-in-out;
+    position: relative;
+    z-index: 10;
+}
+
+/* 5. 羽毛球（🏸）在上方與下方之間來回飛行對打 */
+@keyframes shuttlecockRally {
     0% {
-        opacity: 0;
-        transform: translate(25px, 0px) scale(0.4);
+        /* 上方俊丞擊球點 */
+        transform: translate(-30px, 8px) scale(0.9) rotate(160deg);
+        filter: drop-shadow(0 0 6px #ff3b00);
     }
-    20% {
-        opacity: 1;
-        transform: translate(25px, 15px) scale(1);
-        box-shadow: 0 0 15px #ff4500, 0 0 25px #ffcc00;
+    45% {
+        /* 飛向下方臨恩 (弧線過渡) */
+        transform: translate(25px, 55px) scale(1.2) rotate(190deg);
+        filter: drop-shadow(0 0 8px #ffff00);
     }
-    85% {
-        opacity: 1;
-        transform: translate(25px, 50px) scale(1.3);
-        box-shadow: 0 0 25px #ff2200, 0 0 35px #ffff00;
+    50% {
+        /* 下方臨恩擊球點 (扣殺反彈) */
+        transform: translate(35px, 75px) scale(1.4) rotate(15deg);
+        filter: drop-shadow(0 0 10px #00e5ff);
     }
     95% {
-        opacity: 1;
-        transform: translate(25px, 60px) scale(1.8);
-        box-shadow: 0 0 35px #ffffff, 0 0 50px #ff0000;
+        /* 飛回上方俊丞 */
+        transform: translate(-20px, 20px) scale(1.1) rotate(-20deg);
+        filter: drop-shadow(0 0 8px #80d8ff);
     }
     100% {
-        opacity: 0;
-        transform: translate(25px, 65px) scale(2.2);
+        transform: translate(-30px, 8px) scale(0.9) rotate(160deg);
+        filter: drop-shadow(0 0 6px #ff3b00);
     }
 }
-.fire-down {
+.shuttlecock-ball {
     position: absolute;
     top: 50%;
-    left: 50%;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: radial-gradient(circle, #ffffff 10%, #ffee55 35%, #ff4500 70%, #990000 100%);
+    left: 45%;
+    font-size: 20px;
+    line-height: 1;
     pointer-events: none;
-    animation: shootFireDown 1.5s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    animation: shuttlecockRally 2.4s infinite ease-in-out;
     z-index: 999;
-}
-
-/* 火球彈道：向上發射 (Shooting UP) */
-@keyframes shootFireUp {
-    0% {
-        opacity: 0;
-        transform: translate(25px, 0px) scale(0.4);
-    }
-    20% {
-        opacity: 1;
-        transform: translate(25px, -15px) scale(1);
-        box-shadow: 0 0 15px #ff4500, 0 0 25px #ffcc00;
-    }
-    85% {
-        opacity: 1;
-        transform: translate(25px, -50px) scale(1.3);
-        box-shadow: 0 0 25px #ff2200, 0 0 35px #ffff00;
-    }
-    95% {
-        opacity: 1;
-        transform: translate(25px, -60px) scale(1.8);
-        box-shadow: 0 0 35px #ffffff, 0 0 50px #ff0000;
-    }
-    100% {
-        opacity: 0;
-        transform: translate(25px, -65px) scale(2.2);
-    }
-}
-.fire-up {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: radial-gradient(circle, #ffffff 10%, #ffee55 35%, #ff4500 70%, #990000 100%);
-    pointer-events: none;
-    animation: shootFireUp 1.5s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    z-index: 999;
-}
-
-/* 冰錐彈道：向下發射 (Shooting DOWN) */
-@keyframes shootIceDown {
-    0% {
-        opacity: 0;
-        transform: translate(25px, 0px) scale(0.4);
-    }
-    20% {
-        opacity: 1;
-        transform: translate(25px, 15px) scale(1);
-        box-shadow: 0 0 15px #00e5ff, 0 0 25px #80d8ff;
-    }
-    85% {
-        opacity: 1;
-        transform: translate(25px, 50px) scale(1.3);
-        box-shadow: 0 0 25px #00b0ff, 0 0 35px #ffffff;
-    }
-    95% {
-        opacity: 1;
-        transform: translate(25px, 60px) scale(1.8);
-        box-shadow: 0 0 35px #ffffff, 0 0 50px #00e5ff;
-    }
-    100% {
-        opacity: 0;
-        transform: translate(25px, 65px) scale(2.2);
-    }
-}
-.ice-down {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 18px;
-    height: 18px;
-    border-radius: 20% 80% 20% 80%;
-    background: radial-gradient(circle, #ffffff 15%, #b3e5fc 40%, #00b0ff 75%, #01579b 100%);
-    pointer-events: none;
-    animation: shootIceDown 1.5s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    z-index: 999;
-}
-
-/* 冰錐彈道：向上發射 (Shooting UP) */
-@keyframes shootIceUp {
-    0% {
-        opacity: 0;
-        transform: translate(25px, 0px) scale(0.4);
-    }
-    20% {
-        opacity: 1;
-        transform: translate(25px, -15px) scale(1);
-        box-shadow: 0 0 15px #00e5ff, 0 0 25px #80d8ff;
-    }
-    85% {
-        opacity: 1;
-        transform: translate(25px, -50px) scale(1.3);
-        box-shadow: 0 0 25px #00b0ff, 0 0 35px #ffffff;
-    }
-    95% {
-        opacity: 1;
-        transform: translate(25px, -60px) scale(1.8);
-        box-shadow: 0 0 35px #ffffff, 0 0 50px #00e5ff;
-    }
-    100% {
-        opacity: 0;
-        transform: translate(25px, -65px) scale(2.2);
-    }
-}
-.ice-up {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 18px;
-    height: 18px;
-    border-radius: 20% 80% 20% 80%;
-    background: radial-gradient(circle, #ffffff 15%, #b3e5fc 40%, #00b0ff 75%, #01579b 100%);
-    pointer-events: none;
-    animation: shootIceUp 1.5s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    z-index: 999;
-}
-
-/* 碰撞爆炸點衝擊波 (Impact Explosion) */
-@keyframes explodeDown {
-    0%, 75% { opacity: 0; transform: translate(25px, 60px) scale(0.2); }
-    85% { opacity: 1; transform: translate(25px, 60px) scale(1.5); box-shadow: 0 0 25px #ffffff, 0 0 40px #ff3300, 0 0 40px #00e5ff; }
-    100% { opacity: 0; transform: translate(25px, 60px) scale(2.3); }
-}
-.explosion-down {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: radial-gradient(circle, #ffffff 20%, #ffff77 40%, #ff4500 70%, #00e5ff 100%);
-    pointer-events: none;
-    animation: explodeDown 1.5s infinite ease-out;
-    z-index: 1000;
-}
-
-@keyframes explodeUp {
-    0%, 75% { opacity: 0; transform: translate(25px, -60px) scale(0.2); }
-    85% { opacity: 1; transform: translate(25px, -60px) scale(1.5); box-shadow: 0 0 25px #ffffff, 0 0 40px #ff3300, 0 0 40px #00e5ff; }
-    100% { opacity: 0; transform: translate(25px, -60px) scale(2.3); }
-}
-.explosion-up {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: radial-gradient(circle, #ffffff 20%, #ffff77 40%, #ff4500 70%, #00e5ff 100%);
-    pointer-events: none;
-    animation: explodeUp 1.5s infinite ease-out;
-    z-index: 1000;
 }
 
 .custom-table {
@@ -439,7 +302,7 @@ st.markdown("""
     position: relative;
 }
 .custom-table th, .custom-table td {
-    padding: 12px 10px;
+    padding: 14px 10px;
     border: 1px solid rgba(128, 128, 128, 0.2);
     text-align: left;
     vertical-align: middle;
@@ -457,7 +320,7 @@ st.subheader("📝 我要點餐")
 selected_restaurant = st.selectbox("選擇今日訂購店家", list(RESTAURANT_MENUS.keys()))
 current_menu = RESTAURANT_MENUS[selected_restaurant]
 
-# 名字選擇（點單階段乾淨正常）
+# 名字選擇
 selected_member = st.selectbox("選擇點餐人員", MEMBERS)
 
 with st.form(key="order_form", clear_on_submit=True):
@@ -509,6 +372,10 @@ st.subheader("📊 目前點餐狀況與統計")
 orders_df = load_orders()
 
 if not orders_df.empty:
+    has_chen = any("俊丞" in str(name) for name in orders_df["姓名"])
+    has_yeh = any("臨恩" in str(name) for name in orders_df["姓名"])
+    is_playing_badminton = has_chen and has_yeh
+
     total_qty = len(orders_df)
     total_amount = orders_df["金額"].sum()
     col1, col2 = st.columns(2)
@@ -524,34 +391,28 @@ if not orders_df.empty:
     st.markdown("**【每人應收金額】**")
     person_df = orders_df.groupby("姓名")["金額"].sum().reset_index(name="應付金額")
     
-    # 動態計算人名表中的上下位置
-    p_names = person_df["姓名"].tolist()
-    p_chen_idx = next((i for i, n in enumerate(p_names) if "俊丞" in str(n)), None)
-    p_yeh_idx = next((i for i, n in enumerate(p_names) if "臨恩" in str(n)), None)
-    
+    # 兩人都點餐時：自動將俊丞排在上方、臨恩排在下方，進行羽毛球對打！
+    if is_playing_badminton:
+        chen_row = person_df[person_df["姓名"].str.contains("俊丞", na=False)]
+        yeh_row = person_df[person_df["姓名"].str.contains("臨恩", na=False)]
+        other_rows = person_df[~person_df["姓名"].str.contains("俊丞|臨恩", na=False)]
+        person_df = pd.concat([chen_row, other_rows, yeh_row], ignore_index=True)
+
     person_html = '<table class="custom-table"><thead><tr><th>姓名</th><th>應付金額</th></tr></thead><tbody>'
     for idx, row in person_df.iterrows():
         name_str = str(row["姓名"])
         if "俊丞" in name_str:
-            if p_chen_idx is not None and p_yeh_idx is not None:
-                if p_chen_idx < p_yeh_idx:
-                    # 俊丞在上：火球向下射擊 + 中央爆炸
-                    name_display = f'<span class="flame-name">{name_str}<span class="fire-down"></span><span class="explosion-down"></span></span>'
-                else:
-                    # 俊丞在下：火球向上射擊 + 中央爆炸
-                    name_display = f'<span class="flame-name">{name_str}<span class="fire-up"></span><span class="explosion-up"></span></span>'
+            if is_playing_badminton:
+                # 俊丞在上方揮拍 + 生成羽毛球
+                name_display = f'<span class="badminton-player-top">{name_str}</span><span class="shuttlecock-ball">🏸</span>'
             else:
-                name_display = f'<span class="flame-name">{name_str}</span>'
+                name_display = f'<span class="flame-solo">{name_str}</span>'
         elif "臨恩" in name_str:
-            if p_chen_idx is not None and p_yeh_idx is not None:
-                if p_yeh_idx < p_chen_idx:
-                    # 臨恩在上：冰錐向下射擊
-                    name_display = f'<span class="ice-name">{name_str}<span class="ice-down"></span></span>'
-                else:
-                    # 臨恩在下：冰錐向上射擊
-                    name_display = f'<span class="ice-name">{name_str}<span class="ice-up"></span></span>'
+            if is_playing_badminton:
+                # 臨恩在下方揮拍接球
+                name_display = f'<span class="badminton-player-bottom">{name_str}</span>'
             else:
-                name_display = f'<span class="ice-name">{name_str}</span>'
+                name_display = f'<span class="ice-solo">{name_str}</span>'
         else:
             name_display = name_str
         
@@ -561,29 +422,19 @@ if not orders_df.empty:
 
     # 3. 詳細點餐名冊
     st.markdown("**【詳細點餐名冊】**")
-    d_names = orders_df["姓名"].tolist()
-    d_chen_idx = next((i for i, n in enumerate(d_names) if "俊丞" in str(n)), None)
-    d_yeh_idx = next((i for i, n in enumerate(d_names) if "臨恩" in str(n)), None)
-
     detail_html = '<table class="custom-table"><thead><tr><th>店家</th><th>姓名</th><th>餐點</th><th>金額</th><th>備註</th></tr></thead><tbody>'
     for idx, row in orders_df.iterrows():
         name_str = str(row["姓名"])
         if "俊丞" in name_str:
-            if d_chen_idx is not None and d_yeh_idx is not None:
-                if d_chen_idx < d_yeh_idx:
-                    name_display = f'<span class="flame-name">{name_str}<span class="fire-down"></span><span class="explosion-down"></span></span>'
-                else:
-                    name_display = f'<span class="flame-name">{name_str}<span class="fire-up"></span><span class="explosion-up"></span></span>'
+            if is_playing_badminton:
+                name_display = f'<span class="badminton-player-top">{name_str}</span>'
             else:
-                name_display = f'<span class="flame-name">{name_str}</span>'
+                name_display = f'<span class="flame-solo">{name_str}</span>'
         elif "臨恩" in name_str:
-            if d_chen_idx is not None and d_yeh_idx is not None:
-                if d_yeh_idx < d_chen_idx:
-                    name_display = f'<span class="ice-name">{name_str}<span class="ice-down"></span></span>'
-                else:
-                    name_display = f'<span class="ice-name">{name_str}<span class="ice-up"></span></span>'
+            if is_playing_badminton:
+                name_display = f'<span class="badminton-player-bottom">{name_str}</span>'
             else:
-                name_display = f'<span class="ice-name">{name_str}</span>'
+                name_display = f'<span class="ice-solo">{name_str}</span>'
         else:
             name_display = name_str
 
