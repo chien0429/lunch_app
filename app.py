@@ -112,7 +112,7 @@ RESTAURANT_MENUS = {
         "黃金蕎麥那提(L)": 60, "日式抹茶初雪": 50, "黑糖抹茶初雪": 55, "關山黑糖那提": 55,
         "黑糖竹薑茶": 45, "黑糖竹薑那提": 50, "蜜香竹薑茶": 40, "加料: 梅子": 5,
         "加料: 桂花釀": 10, "加料: 黑糖波霸/珍珠/QQ": 15, "加料: 愛玉凍/仙草凍/布丁/多多": 15,
-        "加料: 冰淇淋/黑糖Q凍/桂花凍/青梅凍": 20, "加料: 牛奶/蜂蜜": 25,
+        "加料: 冰淇淋/黑糖Q凍/桂花凍/青梅凍": 20, "加料: 牛牛奶/蜂蜜": 25,
     },
     "龍饌食堂": {
         "土雞肉飯便當": 110, "土雞腿肉飯便當": 150, "客家焢肉飯便當": 110, "冰糖豬腳飯便當": 140,
@@ -189,7 +189,103 @@ RESTAURANT_MENUS = {
     }
 }
 
-# 注入名牌【上下縱向對撞】動畫 CSS
+# 動態計算相隔行數並產生「精確相遇 + 爆炸」CSS 樣式
+def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=52):
+    if top_idx is None or btm_idx is None or top_idx == btm_idx:
+        return ""
+    diff = abs(btm_idx - top_idx)
+    distance_px = int((diff * row_height) / 2)
+    
+    return f"""
+    <style>
+    /* 上方選手：精確俯衝到中心點 */
+    @keyframes smashDown_{table_id} {{
+        0% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
+        30% {{ transform: translateY(-10px) scale(0.95); filter: brightness(1.2); }}
+        50% {{ 
+            transform: translateY({distance_px}px) scale(1.35) rotate(-4deg); 
+            filter: brightness(2.2) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #ff3300);
+        }}
+        58% {{ 
+            transform: translateY({int(distance_px * 0.65)}px) scale(1.1) rotate(5deg); 
+            filter: brightness(1.6) drop-shadow(0 0 15px #ff8800);
+        }}
+        72% {{ transform: translateY({int(distance_px * 0.15)}px) scale(1.02); }}
+        100% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
+    }}
+
+    /* 下方選手：精確拔地衝天到中心點 */
+    @keyframes smashUp_{table_id} {{
+        0% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
+        30% {{ transform: translateY(10px) scale(0.95); filter: brightness(1.2); }}
+        50% {{ 
+            transform: translateY(-{distance_px}px) scale(1.35) rotate(4deg); 
+            filter: brightness(2.2) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #00e5ff);
+        }}
+        58% {{ 
+            transform: translateY(-{int(distance_px * 0.65)}px) scale(1.1) rotate(-5deg); 
+            filter: brightness(1.6) drop-shadow(0 0 15px #00b0ff);
+        }}
+        72% {{ transform: translateY(-{int(distance_px * 0.15)}px) scale(1.02); }}
+        100% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
+    }}
+
+    /* 中心相撞點引爆超新星爆炸 */
+    @keyframes explosionBurst_{table_id} {{
+        0%, 46% {{ 
+            opacity: 0; 
+            transform: translate(-50%, -50%) translateY({distance_px}px) scale(0.1); 
+        }}
+        50% {{ 
+            opacity: 1; 
+            transform: translate(-50%, -50%) translateY({distance_px}px) scale(3.5); 
+            box-shadow: 0 0 35px #ffffff, 0 0 60px #ffea00, 0 0 90px #ff3300, 0 0 110px #00e5ff;
+        }}
+        62% {{ 
+            opacity: 0.85; 
+            transform: translate(-50%, -50%) translateY({distance_px}px) scale(4.5); 
+            box-shadow: 0 0 45px rgba(255,255,255,0.9), 0 0 75px rgba(255,69,0,0.6), 0 0 95px rgba(0,229,255,0.6);
+        }}
+        75%, 100% {{ 
+            opacity: 0; 
+            transform: translate(-50%, -50%) translateY({distance_px}px) scale(5.5); 
+        }}
+    }}
+
+    .smash-top-{table_id} {{
+        display: inline-block;
+        position: relative;
+        font-weight: 900;
+        letter-spacing: 2px;
+        animation: smashDown_{table_id} 1.8s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        z-index: 25;
+    }}
+
+    .smash-bottom-{table_id} {{
+        display: inline-block;
+        position: relative;
+        font-weight: 900;
+        letter-spacing: 2px;
+        animation: smashUp_{table_id} 1.8s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        z-index: 25;
+    }}
+
+    .explosion-core-{table_id} {{
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: radial-gradient(circle, #ffffff 10%, #ffff77 30%, #ff4500 65%, #00e5ff 90%, transparent 100%);
+        pointer-events: none;
+        animation: explosionBurst_{table_id} 1.8s infinite ease-out;
+        z-index: 999;
+    }}
+    </style>
+    """
+
+# 注入基本表格與常態字體樣式
 st.markdown("""
 <style>
 /* 常態烈焰字體（僅俊丞一人時） */
@@ -218,100 +314,6 @@ st.markdown("""
     animation: iceSolo 1.4s infinite alternate ease-in-out;
 }
 
-/* 1. 上方選手：向下猛烈俯衝泰山壓頂 */
-@keyframes smashDown {
-    0% {
-        transform: translateY(0px) scale(1);
-        text-shadow: 0 0 4px #ff4500;
-    }
-    30% {
-        /* 蓄力向上後撤 */
-        transform: translateY(-12px) scale(0.95);
-        text-shadow: 0 0 12px #ff2200, 0 0 20px #ffaa00;
-    }
-    50% {
-        /* 向下重扣撞擊！ */
-        transform: translateY(32px) scale(1.18);
-        text-shadow: 0 0 25px #ffffff, 0 0 35px #ff0000, 0 0 45px #ffff00;
-    }
-    60% {
-        /* 碰撞震退反彈 */
-        transform: translateY(6px) scale(1.05);
-        text-shadow: 0 0 15px #ff5500;
-    }
-    100% {
-        transform: translateY(0px) scale(1);
-        text-shadow: 0 0 4px #ff4500;
-    }
-}
-
-.smash-top-flame {
-    display: inline-block;
-    position: relative;
-    font-weight: 900;
-    color: #ff3b00;
-    letter-spacing: 2px;
-    animation: smashDown 1.4s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    z-index: 20;
-}
-
-.smash-top-ice {
-    display: inline-block;
-    position: relative;
-    font-weight: 900;
-    color: #00b0ff;
-    letter-spacing: 2px;
-    animation: smashDown 1.4s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    z-index: 20;
-}
-
-/* 2. 下方選手：向上拔地沖天迎頭撞擊 */
-@keyframes smashUp {
-    0% {
-        transform: translateY(0px) scale(1);
-        text-shadow: 0 0 4px #00b0ff;
-    }
-    30% {
-        /* 蓄力向下深蹲後撤 */
-        transform: translateY(12px) scale(0.95);
-        text-shadow: 0 0 12px #0070f3, 0 0 20px #80d8ff;
-    }
-    50% {
-        /* 向上沖天迎擊碰撞！ */
-        transform: translateY(-32px) scale(1.18);
-        text-shadow: 0 0 25px #ffffff, 0 0 35px #00e5ff, 0 0 45px #2979ff;
-    }
-    60% {
-        /* 碰撞震退反彈 */
-        transform: translateY(-6px) scale(1.05);
-        text-shadow: 0 0 15px #0091ea;
-    }
-    100% {
-        transform: translateY(0px) scale(1);
-        text-shadow: 0 0 4px #00b0ff;
-    }
-}
-
-.smash-bottom-flame {
-    display: inline-block;
-    position: relative;
-    font-weight: 900;
-    color: #ff3b00;
-    letter-spacing: 2px;
-    animation: smashUp 1.4s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    z-index: 20;
-}
-
-.smash-bottom-ice {
-    display: inline-block;
-    position: relative;
-    font-weight: 900;
-    color: #00b0ff;
-    letter-spacing: 2px;
-    animation: smashUp 1.4s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    z-index: 20;
-}
-
 .custom-table {
     width: 100%;
     border-collapse: collapse;
@@ -319,8 +321,14 @@ st.markdown("""
     font-size: 15px;
     position: relative;
 }
+.custom-table tr {
+    height: 52px;
+    box-sizing: border-box;
+}
 .custom-table th, .custom-table td {
-    padding: 14px 10px;
+    padding: 10px 12px;
+    height: 52px;
+    box-sizing: border-box;
     border: 1px solid rgba(128, 128, 128, 0.2);
     text-align: left;
     vertical-align: middle;
@@ -409,10 +417,15 @@ if not orders_df.empty:
     st.markdown("**【每人應收金額】**")
     person_df = orders_df.groupby("姓名")["金額"].sum().reset_index(name="應付金額")
 
-    # 動態計算人名表中的上下順序
+    # 計算人名表格中的行距
     p_names = person_df["姓名"].tolist()
     p_chen_idx = next((i for i, n in enumerate(p_names) if "俊丞" in str(n)), None)
     p_yeh_idx = next((i for i, n in enumerate(p_names) if "臨恩" in str(n)), None)
+
+    if is_clashing and p_chen_idx is not None and p_yeh_idx is not None:
+        top_idx_p = min(p_chen_idx, p_yeh_idx)
+        btm_idx_p = max(p_chen_idx, p_yeh_idx)
+        st.markdown(generate_dynamic_clash_css("person", top_idx_p, btm_idx_p, row_height=52), unsafe_allow_html=True)
 
     person_html = '<table class="custom-table"><thead><tr><th>姓名</th><th>應付金額</th></tr></thead><tbody>'
     for idx, row in person_df.iterrows():
@@ -420,21 +433,21 @@ if not orders_df.empty:
         if "俊丞" in name_str:
             if is_clashing and p_chen_idx is not None and p_yeh_idx is not None:
                 if p_chen_idx < p_yeh_idx:
-                    # 俊丞在上：向下猛烈俯衝
-                    name_display = f'<span class="smash-top-flame">{name_str}</span>'
+                    # 俊丞在上：向下俯衝 + 攜帶中心大爆炸
+                    name_display = f'<span class="smash-top-person" style="color:#ff3b00;">{name_str}<span class="explosion-core-person"></span></span>'
                 else:
-                    # 俊丞在下：向上沖天迎擊
-                    name_display = f'<span class="smash-bottom-flame">{name_str}</span>'
+                    # 俊丞在下：向上衝天
+                    name_display = f'<span class="smash-bottom-person" style="color:#ff3b00;">{name_str}</span>'
             else:
                 name_display = f'<span class="flame-solo">{name_str}</span>'
         elif "臨恩" in name_str:
             if is_clashing and p_chen_idx is not None and p_yeh_idx is not None:
                 if p_yeh_idx < p_chen_idx:
-                    # 臨恩在上：向下猛烈俯衝
-                    name_display = f'<span class="smash-top-ice">{name_str}</span>'
+                    # 臨恩在上：向下俯衝 + 攜帶中心大爆炸
+                    name_display = f'<span class="smash-top-person" style="color:#00b0ff;">{name_str}<span class="explosion-core-person"></span></span>'
                 else:
-                    # 臨恩在下：向上沖天迎擊
-                    name_display = f'<span class="smash-bottom-ice">{name_str}</span>'
+                    # 臨恩在下：向上衝天
+                    name_display = f'<span class="smash-bottom-person" style="color:#00b0ff;">{name_str}</span>'
             else:
                 name_display = f'<span class="ice-solo">{name_str}</span>'
         else:
@@ -450,23 +463,28 @@ if not orders_df.empty:
     d_chen_idx = next((i for i, n in enumerate(d_names) if "俊丞" in str(n)), None)
     d_yeh_idx = next((i for i, n in enumerate(d_names) if "臨恩" in str(n)), None)
 
+    if is_clashing and d_chen_idx is not None and d_yeh_idx is not None:
+        top_idx_d = min(d_chen_idx, d_yeh_idx)
+        btm_idx_d = max(d_chen_idx, d_yeh_idx)
+        st.markdown(generate_dynamic_clash_css("detail", top_idx_d, btm_idx_d, row_height=52), unsafe_allow_html=True)
+
     detail_html = '<table class="custom-table"><thead><tr><th>店家</th><th>姓名</th><th>餐點</th><th>金額</th><th>備註</th></tr></thead><tbody>'
     for idx, row in orders_df.iterrows():
         name_str = str(row["姓名"])
         if "俊丞" in name_str:
             if is_clashing and d_chen_idx is not None and d_yeh_idx is not None:
                 if d_chen_idx < d_yeh_idx:
-                    name_display = f'<span class="smash-top-flame">{name_str}</span>'
+                    name_display = f'<span class="smash-top-detail" style="color:#ff3b00;">{name_str}<span class="explosion-core-detail"></span></span>'
                 else:
-                    name_display = f'<span class="smash-bottom-flame">{name_str}</span>'
+                    name_display = f'<span class="smash-bottom-detail" style="color:#ff3b00;">{name_str}</span>'
             else:
                 name_display = f'<span class="flame-solo">{name_str}</span>'
         elif "臨恩" in name_str:
             if is_clashing and d_chen_idx is not None and d_yeh_idx is not None:
                 if d_yeh_idx < d_chen_idx:
-                    name_display = f'<span class="smash-top-ice">{name_str}</span>'
+                    name_display = f'<span class="smash-top-detail" style="color:#00b0ff;">{name_str}<span class="explosion-core-detail"></span></span>'
                 else:
-                    name_display = f'<span class="smash-bottom-ice">{name_str}</span>'
+                    name_display = f'<span class="smash-bottom-detail" style="color:#00b0ff;">{name_str}</span>'
             else:
                 name_display = f'<span class="ice-solo">{name_str}</span>'
         else:
