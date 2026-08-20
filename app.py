@@ -189,6 +189,47 @@ RESTAURANT_MENUS = {
     }
 }
 
+# 注入純 CSS 火焰燃燒字體樣式（僅針對字體本身）
+st.markdown("""
+<style>
+@keyframes pureFlameText {
+    0% {
+        color: #ffeedd;
+        text-shadow: 0 0 3px #ffe600, 0 -2px 4px #ff5a00, 1px -5px 7px #ff2200, -1px -8px 12px #d00000;
+    }
+    50% {
+        color: #ffffff;
+        text-shadow: 0 0 6px #fffb00, -1px -3px 5px #ff7700, 2px -7px 10px #ff3300, 1px -12px 16px #900000;
+    }
+    100% {
+        color: #ffeedd;
+        text-shadow: 0 0 3px #ffe600, 0 -2px 4px #ff5a00, 1px -5px 7px #ff2200, -1px -8px 12px #d00000;
+    }
+}
+.flame-name {
+    display: inline-block;
+    font-weight: 900;
+    letter-spacing: 2px;
+    animation: pureFlameText 1.2s infinite alternate ease-in-out;
+}
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    font-size: 15px;
+}
+.custom-table th, .custom-table td {
+    padding: 10px;
+    border: 1px solid rgba(128, 128, 128, 0.2);
+    text-align: left;
+}
+.custom-table th {
+    background-color: rgba(128, 128, 128, 0.1);
+    font-weight: bold;
+}
+</style>
+""", unsafe_allow_html=True)
+
 # --- 點餐區 ---
 st.subheader("📝 我要點餐")
 
@@ -198,46 +239,13 @@ current_menu = RESTAURANT_MENUS[selected_restaurant]
 # 名字選擇
 selected_member = st.selectbox("選擇點餐人員", MEMBERS)
 
-# 特效 1：煞氣a臨恩專屬炫彩橫幅
+# 特效：煞氣a臨恩專屬炫彩橫幅
 if "臨恩" in selected_member:
     st.markdown("""
     <div style="background: linear-gradient(90deg, #ff007f, #7928ca, #0070f3); padding: 12px; border-radius: 10px; text-align: center; margin-bottom: 15px; box-shadow: 0 0 15px #ff007f;">
         <span style="color: #ffffff; font-size: 20px; font-weight: 900; letter-spacing: 2px; text-shadow: 0 0 8px #fff, 0 0 15px #ff0080;">
             ⚠️ 警告：至尊霸主【煞氣a臨恩】已降臨點餐戰場！全體肅靜！ ⚡🔥
         </span>
-    </div>
-    """, unsafe_allow_html=True)
-
-# 特效 2：陳俊丞專屬「底邊火焰燃燒特效字體」
-if selected_member == "陳俊丞":
-    st.markdown("""
-    <style>
-    @keyframes flameFlicker {
-        0% {
-            text-shadow: 0 0 4px #ffe600, 0 -2px 4px #ff5a00, 2px -6px 8px #ff2200, -2px -10px 14px #d00000;
-        }
-        50% {
-            text-shadow: 0 0 8px #fffb00, -2px -4px 6px #ff7700, 3px -10px 12px #ff3300, 1px -16px 20px #900000;
-        }
-        100% {
-            text-shadow: 0 0 4px #ffe600, 0 -2px 4px #ff5a00, 2px -6px 8px #ff2200, -2px -10px 14px #d00000;
-        }
-    }
-    .flame-text-box {
-        text-align: center;
-        padding: 10px 0 15px 0;
-    }
-    .flame-text {
-        font-size: 32px;
-        font-weight: 900;
-        letter-spacing: 6px;
-        color: #fff7e6;
-        display: inline-block;
-        animation: flameFlicker 1.2s infinite alternate ease-in-out;
-    }
-    </style>
-    <div class="flame-text-box">
-        <span class="flame-text">🔥 陳俊丞 🔥</span>
     </div>
     """, unsafe_allow_html=True)
 
@@ -283,8 +291,6 @@ with st.form(key="order_form", clear_on_submit=True):
             if "臨恩" in final_name:
                 st.balloons()
                 st.success(f"👑 恭迎【煞氣a臨恩】御駕親征！已成功點購 {len(selected_items)} 道御膳！")
-            elif final_name == "陳俊丞":
-                st.error(f"🔥【陳俊丞】以烈焰之姿送出了 {len(selected_items)} 份訂單！")
             else:
                 user_total = sum(current_menu[item] for item in selected_items)
                 st.success(f"已記錄 {final_name} 的訂單！共 {len(selected_items)} 樣，個人小計：${user_total} 元")
@@ -304,19 +310,36 @@ if not orders_df.empty:
     col1.metric("總訂購件數", f"{total_qty} 份")
     col2.metric("總應收金額", f"${total_amount} 元")
 
-    # 依店家與餐點彙整數量
+    # 1. 店家點餐彙整
     st.markdown("**【店家點餐彙整】**")
     summary_df = orders_df.groupby(["店家", "餐點"]).size().reset_index(name="數量")
     st.table(summary_df)
 
-    # 依人名統計每人應付金額
+    # 格式化人名函數（陳俊丞專屬純火焰字體，不加任何圖案）
+    def render_name(name):
+        if name == "陳俊丞":
+            return '<span class="flame-name">陳俊丞</span>'
+        return str(name)
+
+    # 2. 依人名統計每人應付金額
     st.markdown("**【每人應收金額】**")
     person_df = orders_df.groupby("姓名")["金額"].sum().reset_index(name="應付金額")
-    st.dataframe(person_df, use_container_width=True)
+    
+    person_html = '<table class="custom-table"><thead><tr><th>姓名</th><th>應付金額</th></tr></thead><tbody>'
+    for _, row in person_df.iterrows():
+        name_html = render_name(row["姓名"])
+        person_html += f'<tr><td>{name_html}</td><td>${row["應付金額"]} 元</td></tr>'
+    person_html += '</tbody></table>'
+    st.markdown(person_html, unsafe_allow_html=True)
 
-    # 完整明細表
+    # 3. 詳細點餐名冊
     st.markdown("**【詳細點餐名冊】**")
-    st.dataframe(orders_df, use_container_width=True)
+    detail_html = '<table class="custom-table"><thead><tr><th>店家</th><th>姓名</th><th>餐點</th><th>金額</th><th>備註</th></tr></thead><tbody>'
+    for _, row in orders_df.iterrows():
+        name_html = render_name(row["姓名"])
+        detail_html += f'<tr><td>{row["店家"]}</td><td>{name_html}</td><td>{row["餐點"]}</td><td>${row["金額"]}</td><td>{row["備註"]}</td></tr>'
+    detail_html += '</tbody></table>'
+    st.markdown(detail_html, unsafe_allow_html=True)
 
     # --- 刪除特定訂單功能（含密碼保護） ---
     with st.expander("🛠️ 訂單修改 / 刪除管理（需管理密碼）"):
