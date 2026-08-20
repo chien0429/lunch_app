@@ -189,10 +189,10 @@ RESTAURANT_MENUS = {
     }
 }
 
-# 注入純 CSS 烈焰、極冰與冰火碰撞動畫樣式
+# 注入純 CSS 烈焰、極冰與冰火激突粒子碰撞樣式
 st.markdown("""
 <style>
-/* 1. 俊丞專屬：純火焰燃燒字體 */
+/* 1. 俊丞常態：純火焰燃燒字體 */
 @keyframes pureFlameText {
     0% {
         color: #ffeedd;
@@ -214,7 +214,7 @@ st.markdown("""
     animation: pureFlameText 1.2s infinite alternate ease-in-out;
 }
 
-/* 2. 臨恩專屬：純極寒冰霜字體 */
+/* 2. 臨恩常態：純極寒冰霜字體 */
 @keyframes pureIceText {
     0% {
         color: #e0f7fa;
@@ -236,39 +236,49 @@ st.markdown("""
     animation: pureIceText 1.5s infinite alternate ease-in-out;
 }
 
-/* 3. 冰火持續碰撞對決橫幅 */
-@keyframes clashGlow {
+/* 3. 冰火激戰對撞模式（兩人都點餐時觸發） */
+@keyframes flameClash {
     0% {
-        box-shadow: 0 0 20px #ff3b00, 0 0 40px #00e5ff, inset 0 0 15px #ffffff;
+        text-shadow: 0 0 4px #ffcc00, 4px -2px 8px #ff4500, 10px 0px 14px #ff0000, 16px 0px 20px #00e5ff;
+        transform: translateX(0px);
     }
     50% {
-        box-shadow: 0 0 35px #ff5500, 0 0 60px #00b0ff, inset 0 0 25px #ffea00;
+        text-shadow: 0 0 8px #ffffff, 6px -4px 12px #ff6600, 14px 0px 18px #ff2200, 22px 0px 26px #00b0ff;
+        transform: translateX(3px);
     }
     100% {
-        box-shadow: 0 0 20px #ff3b00, 0 0 40px #00e5ff, inset 0 0 15px #ffffff;
+        text-shadow: 0 0 4px #ffcc00, 4px -2px 8px #ff4500, 10px 0px 14px #ff0000, 16px 0px 20px #00e5ff;
+        transform: translateX(0px);
     }
 }
-@keyframes shockwave {
-    0% { transform: scale(1); opacity: 0.8; }
-    50% { transform: scale(1.08); opacity: 1; text-shadow: 0 0 15px #fff, 0 0 25px #ffea00; }
-    100% { transform: scale(1); opacity: 0.8; }
-}
-.clash-banner {
-    background: linear-gradient(90deg, #b71c1c 0%, #ff5722 35%, #ffffff 50%, #00b0ff 65%, #0d47a1 100%);
-    border-radius: 12px;
-    padding: 14px 10px;
-    text-align: center;
-    margin: 15px 0 25px 0;
-    animation: clashGlow 1.2s infinite alternate ease-in-out;
-    border: 2px solid #ffffff;
-}
-.clash-content {
-    font-size: 18px;
-    font-weight: 900;
-    color: #111;
+.flame-clash-name {
     display: inline-block;
-    animation: shockwave 0.8s infinite alternate ease-in-out;
+    font-weight: 900;
+    color: #fff2e0;
     letter-spacing: 2px;
+    animation: flameClash 0.6s infinite alternate ease-in-out;
+}
+
+@keyframes iceClash {
+    0% {
+        text-shadow: 0 0 4px #80d8ff, -4px -2px 8px #00b0ff, -10px 0px 14px #0070f3, -16px 0px 20px #ff4500;
+        transform: translateX(0px);
+    }
+    50% {
+        text-shadow: 0 0 8px #ffffff, -6px -4px 12px #00e5ff, -14px 0px 18px #2979ff, -22px 0px 26px #ff2200;
+        transform: translateX(-3px);
+    }
+    100% {
+        text-shadow: 0 0 4px #80d8ff, -4px -2px 8px #00b0ff, -10px 0px 14px #0070f3, -16px 0px 20px #ff4500;
+        transform: translateX(0px);
+    }
+}
+.ice-clash-name {
+    display: inline-block;
+    font-weight: 900;
+    color: #e6ffff;
+    letter-spacing: 2px;
+    animation: iceClash 0.6s infinite alternate ease-in-out;
 }
 
 .custom-table {
@@ -347,18 +357,10 @@ st.subheader("📊 目前點餐狀況與統計")
 orders_df = load_orders()
 
 if not orders_df.empty:
-    # 判斷是否同時有點餐（觸發冰火碰撞特效）
+    # 判斷是否兩人都已點餐（動態切換對撞模式）
     has_chen = any("俊丞" in str(name) for name in orders_df["姓名"])
     has_yeh = any("臨恩" in str(name) for name in orders_df["姓名"])
-
-    if has_chen and has_yeh:
-        st.markdown("""
-        <div class="clash-banner">
-            <span class="clash-content">
-                🔥 焚世烈焰【陳俊丞】 ⚔️ 極凍寒霜【葉臨恩】 ❄️ —— 冰火領域劇烈碰撞中！
-            </span>
-        </div>
-        """, unsafe_allow_html=True)
+    is_clashing = has_chen and has_yeh
 
     total_qty = len(orders_df)
     total_amount = orders_df["金額"].sum()
@@ -371,12 +373,16 @@ if not orders_df.empty:
     summary_df = orders_df.groupby(["店家", "餐點"]).size().reset_index(name="數量")
     st.table(summary_df)
 
-    # 格式化人名函數（俊丞火焰、臨恩極冰，其餘正常）
+    # 格式化人名函數（碰撞狀態 vs 常態狀態）
     def render_name(name):
         name_str = str(name)
         if "俊丞" in name_str:
+            if is_clashing:
+                return f'<span class="flame-clash-name">{name_str}</span>'
             return f'<span class="flame-name">{name_str}</span>'
         elif "臨恩" in name_str:
+            if is_clashing:
+                return f'<span class="ice-clash-name">{name_str}</span>'
             return f'<span class="ice-name">{name_str}</span>'
         return name_str
 
