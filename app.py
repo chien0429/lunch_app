@@ -189,7 +189,7 @@ RESTAURANT_MENUS = {
     }
 }
 
-# 動態產生精確碰撞與超新星爆炸 CSS
+# 動態產生零延遲、對稱相撞大爆炸 CSS
 def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=52):
     if top_idx is None or btm_idx is None or top_idx == btm_idx:
         return ""
@@ -198,57 +198,69 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=52):
     
     return f"""
     <style>
-    /* 上方選手：精確俯衝到碰撞中心點 */
+    /* 上方選手：蓄力後撤 -> 38% 瞬間高速抵達中心點接觸 -> 44% 震退彈回 */
     @keyframes smashDown_{table_id} {{
         0% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
-        25% {{ transform: translateY(-10px) scale(0.95); filter: brightness(1.2); }}
-        50% {{ 
-            transform: translateY({distance_px}px) scale(1.32) rotate(-3deg); 
-            filter: brightness(2.6) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #ff3300);
+        18% {{ transform: translateY(-10px) scale(0.95); filter: brightness(1.2); }}
+        38% {{ 
+            transform: translateY({distance_px}px) scale(1.35) rotate(-3deg); 
+            filter: brightness(2.8) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #ff3300);
         }}
-        58% {{ 
-            transform: translateY({int(distance_px * 0.65)}px) scale(1.1) rotate(4deg); 
-            filter: brightness(1.6) drop-shadow(0 0 15px #ff8800);
+        42% {{ 
+            transform: translateY({distance_px}px) scale(1.35) rotate(-3deg); 
+            filter: brightness(3.0) drop-shadow(0 0 30px #ffffff) drop-shadow(0 0 50px #ffff00);
         }}
-        75% {{ transform: translateY({int(distance_px * 0.15)}px) scale(1.02); }}
+        48% {{ 
+            transform: translateY({int(distance_px * 0.55)}px) scale(1.1) rotate(4deg); 
+            filter: brightness(1.5) drop-shadow(0 0 15px #ff8800);
+        }}
+        65% {{ transform: translateY({int(distance_px * 0.1)}px) scale(1.02); }}
         100% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
     }}
 
-    /* 下方選手：精確衝天到碰撞中心點 */
+    /* 下方選手：蓄力後撤 -> 38% 瞬間高速抵達中心點接觸 -> 44% 震退彈回 */
     @keyframes smashUp_{table_id} {{
         0% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
-        25% {{ transform: translateY(10px) scale(0.95); filter: brightness(1.2); }}
-        50% {{ 
-            transform: translateY(-{distance_px}px) scale(1.32) rotate(3deg); 
-            filter: brightness(2.6) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #00e5ff);
+        18% {{ transform: translateY(10px) scale(0.95); filter: brightness(1.2); }}
+        38% {{ 
+            transform: translateY(-{distance_px}px) scale(1.35) rotate(3deg); 
+            filter: brightness(2.8) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #00e5ff);
         }}
-        58% {{ 
-            transform: translateY(-{int(distance_px * 0.65)}px) scale(1.1) rotate(-4deg); 
-            filter: brightness(1.6) drop-shadow(0 0 15px #00b0ff);
+        42% {{ 
+            transform: translateY(-{distance_px}px) scale(1.35) rotate(3deg); 
+            filter: brightness(3.0) drop-shadow(0 0 30px #ffffff) drop-shadow(0 0 50px #80d8ff);
         }}
-        75% {{ transform: translateY(-{int(distance_px * 0.15)}px) scale(1.02); }}
+        48% {{ 
+            transform: translateY(-{int(distance_px * 0.55)}px) scale(1.1) rotate(-4deg); 
+            filter: brightness(1.5) drop-shadow(0 0 15px #00b0ff);
+        }}
+        65% {{ transform: translateY(-{int(distance_px * 0.1)}px) scale(1.02); }}
         100% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
     }}
 
-    /* 超新星大爆炸（錨定於上方選手，抵達中心時原地引爆，不再重複位移） */
-    @keyframes explosionSupernova_{table_id} {{
-        0%, 44% {{ 
+    /* 雙方中心相撞瞬間引爆（零延遲，38% 精準引爆，46% 快速消散） */
+    @keyframes explosionInstant_{table_id} {{
+        0%, 37% {{ 
             opacity: 0; 
-            transform: translate(-50%, -50%) scale(0.1) rotate(0deg); 
+            transform: translate(-50%, -50%) scale(0.1); 
         }}
-        50% {{ 
+        38% {{ 
             opacity: 1; 
-            transform: translate(-50%, -50%) scale(4.0) rotate(45deg); 
+            transform: translate(-50%, -50%) scale(3.5); 
             box-shadow: 0 0 35px #ffffff, 0 0 70px #ffea00, 0 0 100px #ff3300, 0 0 120px #00e5ff;
         }}
-        60% {{ 
-            opacity: 0.9; 
-            transform: translate(-50%, -50%) scale(5.5) rotate(90deg); 
-            box-shadow: 0 0 50px rgba(255,255,255,0.9), 0 0 90px rgba(255,69,0,0.7), 0 0 110px rgba(0,229,255,0.7);
+        43% {{ 
+            opacity: 0.95; 
+            transform: translate(-50%, -50%) scale(5.0); 
+            box-shadow: 0 0 45px rgba(255,255,255,1), 0 0 85px rgba(255,69,0,0.8), 0 0 110px rgba(0,229,255,0.8);
         }}
-        75%, 100% {{ 
+        46% {{ 
             opacity: 0; 
-            transform: translate(-50%, -50%) scale(7.0) rotate(140deg); 
+            transform: translate(-50%, -50%) scale(6.2); 
+        }}
+        100% {{ 
+            opacity: 0; 
+            transform: translate(-50%, -50%) scale(6.2); 
         }}
     }}
 
@@ -257,7 +269,7 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=52):
         position: relative;
         font-weight: 900;
         letter-spacing: 2px;
-        animation: smashDown_{table_id} 1.8s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        animation: smashDown_{table_id} 1.6s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
         z-index: 25;
     }}
 
@@ -266,20 +278,20 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=52):
         position: relative;
         font-weight: 900;
         letter-spacing: 2px;
-        animation: smashUp_{table_id} 1.8s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        animation: smashUp_{table_id} 1.6s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
         z-index: 25;
     }}
 
-    .explosion-core-{table_id} {{
+    .explosion-burst-{table_id} {{
         position: absolute;
         top: 50%;
         left: 50%;
-        width: 22px;
-        height: 22px;
+        width: 20px;
+        height: 20px;
         border-radius: 50%;
-        background: radial-gradient(circle, #ffffff 15%, #ffff77 35%, #ff4500 65%, #00e5ff 90%, transparent 100%);
+        background: radial-gradient(circle, #ffffff 20%, #ffff77 40%, #ff4500 70%, #00e5ff 95%, transparent 100%);
         pointer-events: none;
-        animation: explosionSupernova_{table_id} 1.8s infinite ease-out;
+        animation: explosionInstant_{table_id} 1.6s infinite ease-out;
         z-index: 999;
     }}
     </style>
@@ -450,15 +462,15 @@ def render_player_flame(name_str, table_id="", is_top=None):
     if is_top is None:
         return f'<span class="flame-name-wrapper">{name_str}<span class="flame-spark-1"></span><span class="flame-spark-2"></span></span>'
     if is_top:
-        return f'<span class="smash-top-{table_id}"><span class="flame-name-wrapper">{name_str}<span class="flame-spark-1"></span><span class="flame-spark-2"></span></span><span class="explosion-core-{table_id}"></span></span>'
-    return f'<span class="smash-bottom-{table_id}"><span class="flame-name-wrapper">{name_str}<span class="flame-spark-1"></span><span class="flame-spark-2"></span></span></span>'
+        return f'<span class="smash-top-{table_id}"><span class="flame-name-wrapper">{name_str}<span class="flame-spark-1"></span><span class="flame-spark-2"></span></span><span class="explosion-burst-{table_id}"></span></span>'
+    return f'<span class="smash-bottom-{table_id}"><span class="flame-name-wrapper">{name_str}<span class="flame-spark-1"></span><span class="flame-spark-2"></span></span><span class="explosion-burst-{table_id}"></span></span>'
 
 def render_player_ice(name_str, table_id="", is_top=None):
     if is_top is None:
         return f'<span class="ice-name-wrapper">{name_str}<span class="ice-crystal-1"></span><span class="ice-crystal-2"></span></span>'
     if is_top:
-        return f'<span class="smash-top-{table_id}"><span class="ice-name-wrapper">{name_str}<span class="ice-crystal-1"></span><span class="ice-crystal-2"></span></span><span class="explosion-core-{table_id}"></span></span>'
-    return f'<span class="smash-bottom-{table_id}"><span class="ice-name-wrapper">{name_str}<span class="ice-crystal-1"></span><span class="ice-crystal-2"></span></span></span>'
+        return f'<span class="smash-top-{table_id}"><span class="ice-name-wrapper">{name_str}<span class="ice-crystal-1"></span><span class="ice-crystal-2"></span></span><span class="explosion-burst-{table_id}"></span></span>'
+    return f'<span class="smash-bottom-{table_id}"><span class="ice-name-wrapper">{name_str}<span class="ice-crystal-1"></span><span class="ice-crystal-2"></span></span><span class="explosion-burst-{table_id}"></span></span>'
 
 # --- 點餐區 ---
 st.subheader("📝 我要點餐")
