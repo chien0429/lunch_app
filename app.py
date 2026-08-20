@@ -24,15 +24,16 @@ def load_orders():
 def save_orders(df):
     df.to_csv(DATA_FILE, index=False, encoding='utf-8-sig')
 
-# 常用同事名單（煞氣a臨恩置頂第一位！）
+# 常用同事名單
 MEMBERS = [
     "🔥⚡【至尊霸主】乂卍↖★煞氣a臨恩☆↘★⚡🔥",
+    "陳俊丞",
     "楊承凱", "倪宗安", "王國祐", "呂盈毅", "謝嘉雲", "顏寶容", "章哲勳", "陳威成",
     "謝文玲", "李雨柔", "皮爵赫", "陳柏伸", "黃志成", "陳柏邑", "盧廷謙", "王宗瑜",
     "李佳航", "楊書維", "張瀚允", "陳柏豪", "曾柏豪", "周秀苓", "許皓翔", "胡煥然",
     "陳永河", "秦昇瑜", "張駿謙", "王慧珍", "黃浚宏", "怡君", "fish",
     # --- BIM 團隊同仁 ---
-    "林詩珊", "謝淳淇", "歐柏鋒", "陳俊丞", "林慧語", "吳詩田",
+    "林詩珊", "謝淳淇", "歐柏鋒", "林慧語", "吳詩田",
     # --- 彈性輸入 ---
     "其他 / 手動輸入"
 ]
@@ -197,13 +198,46 @@ current_menu = RESTAURANT_MENUS[selected_restaurant]
 # 名字選擇
 selected_member = st.selectbox("選擇點餐人員", MEMBERS)
 
-# 特效偵測：若選中臨恩，觸發高能警報炫彩特效橫幅！
+# 特效 1：煞氣a臨恩專屬炫彩橫幅
 if "臨恩" in selected_member:
     st.markdown("""
     <div style="background: linear-gradient(90deg, #ff007f, #7928ca, #0070f3); padding: 12px; border-radius: 10px; text-align: center; margin-bottom: 15px; box-shadow: 0 0 15px #ff007f;">
         <span style="color: #ffffff; font-size: 20px; font-weight: 900; letter-spacing: 2px; text-shadow: 0 0 8px #fff, 0 0 15px #ff0080;">
             ⚠️ 警告：至尊霸主【煞氣a臨恩】已降臨點餐戰場！全體肅靜！ ⚡🔥
         </span>
+    </div>
+    """, unsafe_allow_html=True)
+
+# 特效 2：陳俊丞專屬「底邊火焰燃燒特效字體」
+if selected_member == "陳俊丞":
+    st.markdown("""
+    <style>
+    @keyframes flameFlicker {
+        0% {
+            text-shadow: 0 0 4px #ffe600, 0 -2px 4px #ff5a00, 2px -6px 8px #ff2200, -2px -10px 14px #d00000;
+        }
+        50% {
+            text-shadow: 0 0 8px #fffb00, -2px -4px 6px #ff7700, 3px -10px 12px #ff3300, 1px -16px 20px #900000;
+        }
+        100% {
+            text-shadow: 0 0 4px #ffe600, 0 -2px 4px #ff5a00, 2px -6px 8px #ff2200, -2px -10px 14px #d00000;
+        }
+    }
+    .flame-text-box {
+        text-align: center;
+        padding: 10px 0 15px 0;
+    }
+    .flame-text {
+        font-size: 32px;
+        font-weight: 900;
+        letter-spacing: 6px;
+        color: #fff7e6;
+        display: inline-block;
+        animation: flameFlicker 1.2s infinite alternate ease-in-out;
+    }
+    </style>
+    <div class="flame-text-box">
+        <span class="flame-text">🔥 陳俊丞 🔥</span>
     </div>
     """, unsafe_allow_html=True)
 
@@ -245,10 +279,12 @@ with st.form(key="order_form", clear_on_submit=True):
             updated_df = pd.concat([current_df, pd.DataFrame(new_rows)], ignore_index=True)
             save_orders(updated_df)
             
-            # 若為臨恩送出，觸發滿天彩帶全螢幕特效
+            # 特殊人物送出特效
             if "臨恩" in final_name:
                 st.balloons()
                 st.success(f"👑 恭迎【煞氣a臨恩】御駕親征！已成功點購 {len(selected_items)} 道御膳！")
+            elif final_name == "陳俊丞":
+                st.error(f"🔥【陳俊丞】以烈焰之姿送出了 {len(selected_items)} 份訂單！")
             else:
                 user_total = sum(current_menu[item] for item in selected_items)
                 st.success(f"已記錄 {final_name} 的訂單！共 {len(selected_items)} 樣，個人小計：${user_total} 元")
