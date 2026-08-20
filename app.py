@@ -24,13 +24,13 @@ def load_orders():
 def save_orders(df):
     df.to_csv(DATA_FILE, index=False, encoding='utf-8-sig')
 
-# 常用同事名單（已新增 fish）
+# 常用同事名單（煞氣a臨恩置頂第一位！）
 MEMBERS = [
-    # --- 核心專案同仁 ---
+    "🔥⚡【至尊霸主】乂卍↖★煞氣a臨恩☆↘★⚡🔥",
     "楊承凱", "倪宗安", "王國祐", "呂盈毅", "謝嘉雲", "顏寶容", "章哲勳", "陳威成",
     "謝文玲", "李雨柔", "皮爵赫", "陳柏伸", "黃志成", "陳柏邑", "盧廷謙", "王宗瑜",
     "李佳航", "楊書維", "張瀚允", "陳柏豪", "曾柏豪", "周秀苓", "許皓翔", "胡煥然",
-    "陳永河", "秦昇瑜", "張駿謙", "乂卍↖★煞氣a臨恩☆↘", "王慧珍", "黃浚宏", "怡君", "fish",
+    "陳永河", "秦昇瑜", "張駿謙", "王慧珍", "黃浚宏", "怡君", "fish",
     # --- BIM 團隊同仁 ---
     "林詩珊", "謝淳淇", "歐柏鋒", "陳俊丞", "林慧語", "吳詩田",
     # --- 彈性輸入 ---
@@ -139,7 +139,7 @@ RESTAURANT_MENUS = {
         "滷棒腿飯": 90, "薄鹽鯖魚飯": 90, "叉燒飯": 95, "養生飯": 95,
         "蒲燒魚飯": 95, "鐵路排骨飯": 95, "炸排骨飯": 95, "爌肉飯": 100,
         "法式豬排飯": 100, "菲力豬排飯": 105, "塔香無骨雞排飯": 105, "香雞排飯": 110,
-        "黑胡椒牛柳飯": 110, "和風烤雞飯": 115, "炸雞腿飯": 120, "挪威鯖魚飯": 130,
+        "黑胡椒牛柳飯": 110, "和風烤雞飯": 115, "炸雞腿飯": 120, "挪威鯖魚飯": 110,
     },
     "貓丼": {
         "雙蛋丼飯": 110, "豬肉蛋丼飯": 140, "牛肉蛋丼飯": 150, "炸豬排蛋丼飯": 170,
@@ -194,8 +194,20 @@ st.subheader("📝 我要點餐")
 selected_restaurant = st.selectbox("選擇今日訂購店家", list(RESTAURANT_MENUS.keys()))
 current_menu = RESTAURANT_MENUS[selected_restaurant]
 
+# 名字選擇
+selected_member = st.selectbox("選擇點餐人員", MEMBERS)
+
+# 特效偵測：若選中臨恩，觸發高能警報炫彩特效橫幅！
+if "臨恩" in selected_member:
+    st.markdown("""
+    <div style="background: linear-gradient(90deg, #ff007f, #7928ca, #0070f3); padding: 12px; border-radius: 10px; text-align: center; margin-bottom: 15px; box-shadow: 0 0 15px #ff007f;">
+        <span style="color: #ffffff; font-size: 20px; font-weight: 900; letter-spacing: 2px; text-shadow: 0 0 8px #fff, 0 0 15px #ff0080;">
+            ⚠️ 警告：至尊霸主【煞氣a臨恩】已降臨點餐戰場！全體肅靜！ ⚡🔥
+        </span>
+    </div>
+    """, unsafe_allow_html=True)
+
 with st.form(key="order_form", clear_on_submit=True):
-    selected_member = st.selectbox("選擇點餐人員", MEMBERS)
     custom_name = ""
     if selected_member == "其他 / 手動輸入":
         custom_name = st.text_input("請輸入你的名字 / 暱稱", placeholder="例如：新同仁")
@@ -207,7 +219,7 @@ with st.form(key="order_form", clear_on_submit=True):
     )
     
     notes = st.text_input("備註（可留空）", placeholder="例如：微糖微冰、熱飲、飯少、炒飯加辣等")
-    submit_button = st.form_submit_button(label="送出訂單")
+    submit_button = st.form_submit_button(label="🚀 送出訂單")
 
     if submit_button:
         final_name = custom_name.strip() if selected_member == "其他 / 手動輸入" else selected_member
@@ -233,8 +245,14 @@ with st.form(key="order_form", clear_on_submit=True):
             updated_df = pd.concat([current_df, pd.DataFrame(new_rows)], ignore_index=True)
             save_orders(updated_df)
             
-            user_total = sum(current_menu[item] for item in selected_items)
-            st.success(f"已記錄 {final_name} 的訂單！共 {len(selected_items)} 樣，個人小計：${user_total} 元")
+            # 若為臨恩送出，觸發滿天彩帶全螢幕特效
+            if "臨恩" in final_name:
+                st.balloons()
+                st.success(f"👑 恭迎【煞氣a臨恩】御駕親征！已成功點購 {len(selected_items)} 道御膳！")
+            else:
+                user_total = sum(current_menu[item] for item in selected_items)
+                st.success(f"已記錄 {final_name} 的訂單！共 {len(selected_items)} 樣，個人小計：${user_total} 元")
+            
             st.rerun()
 
 # --- 統計與明細區 ---
