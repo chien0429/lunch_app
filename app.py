@@ -189,149 +189,103 @@ RESTAURANT_MENUS = {
     }
 }
 
-# 注入純 CSS 羽毛球飛行與跑位樣式
+# 注入名牌左右對撞動畫 CSS
 st.markdown("""
 <style>
-/* 常態字體 */
-@keyframes flameGlow {
-    0% { color: #ff3b00; text-shadow: 0 0 4px #ffaa00; }
-    50% { color: #ff8800; text-shadow: 0 0 8px #ffff00; }
-    100% { color: #ff3b00; text-shadow: 0 0 4px #ffaa00; }
+/* 常態烈焰字體（僅俊丞一人時） */
+@keyframes flameSolo {
+    0% { color: #ff3b00; text-shadow: 0 0 5px #ffaa00, 0 0 10px #ff2200; }
+    50% { color: #ff8800; text-shadow: 0 0 10px #ffff00, 0 0 18px #ff4400; }
+    100% { color: #ff3b00; text-shadow: 0 0 5px #ffaa00, 0 0 10px #ff2200; }
 }
 .flame-solo {
     display: inline-block;
     font-weight: 900;
     letter-spacing: 2px;
-    animation: flameGlow 1.2s infinite alternate ease-in-out;
+    animation: flameSolo 1.2s infinite alternate ease-in-out;
 }
 
-@keyframes iceGlow {
-    0% { color: #0091ea; text-shadow: 0 0 4px #80d8ff; }
-    50% { color: #00e5ff; text-shadow: 0 0 8px #ffffff; }
-    100% { color: #0091ea; text-shadow: 0 0 4px #80d8ff; }
+/* 常態極冰字體（僅臨恩一人時） */
+@keyframes iceSolo {
+    0% { color: #0091ea; text-shadow: 0 0 5px #80d8ff, 0 0 10px #00e5ff; }
+    50% { color: #00e5ff; text-shadow: 0 0 10px #ffffff, 0 0 18px #00b0ff; }
+    100% { color: #0091ea; text-shadow: 0 0 5px #80d8ff, 0 0 10px #00e5ff; }
 }
 .ice-solo {
     display: inline-block;
     font-weight: 900;
     letter-spacing: 2px;
-    animation: iceGlow 1.4s infinite alternate ease-in-out;
+    animation: iceSolo 1.4s infinite alternate ease-in-out;
 }
 
-/* 1. 俊丞（上方選手）左右滑步跑位 */
-@keyframes playerTopSwing {
-    0%   { transform: translateX(-20px); }
-    25%  { transform: translateX(20px); }
-    50%  { transform: translateX(-10px); }
-    75%  { transform: translateX(25px); }
-    100% { transform: translateX(-20px); }
+/* 俊丞（烈焰衝撞）：從左側蓄力 ➔ 猛烈向右衝擊 ➔ 撞擊震退 */
+@keyframes chargeRight {
+    0% {
+        transform: translateX(0px) scale(1);
+        text-shadow: 0 0 5px #ff4500;
+    }
+    35% {
+        /* 蓄力後撤 */
+        transform: translateX(-15px) scale(0.95);
+        text-shadow: 0 0 12px #ff2200, 0 0 20px #ffaa00;
+    }
+    50% {
+        /* 猛烈衝向右方中央碰撞！ */
+        transform: translateX(45px) scale(1.18);
+        text-shadow: 0 0 25px #ffff00, 0 0 40px #ff0000;
+    }
+    60% {
+        /* 碰撞彈回受力震動 */
+        transform: translateX(5px) scale(1.05);
+        text-shadow: 0 0 15px #ff5500;
+    }
+    100% {
+        transform: translateX(0px) scale(1);
+        text-shadow: 0 0 5px #ff4500;
+    }
 }
-.player-top-node {
-    display: inline-flex;
-    align-items: center;
-    position: relative;
+
+.charge-chen {
+    display: inline-block;
     font-weight: 900;
-    color: #ff3300;
+    color: #ff3b00;
     letter-spacing: 2px;
-    text-shadow: 0 0 6px #ffcc00;
-    animation: playerTopSwing 2.0s infinite ease-in-out;
-    z-index: 10;
+    animation: chargeRight 1.5s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-/* 2. 臨恩（下方選手）左右滑步跑位 */
-@keyframes playerBottomSwing {
-    0%   { transform: translateX(20px); }
-    25%  { transform: translateX(-20px); }
-    50%  { transform: translateX(10px); }
-    75%  { transform: translateX(-25px); }
-    100% { transform: translateX(20px); }
+/* 臨恩（極冰衝撞）：從右側蓄力 ➔ 猛烈向左衝擊 ➔ 撞擊震退 */
+@keyframes chargeLeft {
+    0% {
+        transform: translateX(0px) scale(1);
+        text-shadow: 0 0 5px #00b0ff;
+    }
+    35% {
+        /* 蓄力後撤 */
+        transform: translateX(15px) scale(0.95);
+        text-shadow: 0 0 12px #0070f3, 0 0 20px #80d8ff;
+    }
+    50% {
+        /* 猛烈衝向左方中央碰撞！ */
+        transform: translateX(-45px) scale(1.18);
+        text-shadow: 0 0 25px #ffffff, 0 0 40px #00e5ff;
+    }
+    60% {
+        /* 碰撞彈回受力震動 */
+        transform: translateX(-5px) scale(1.05);
+        text-shadow: 0 0 15px #0091ea;
+    }
+    100% {
+        transform: translateX(0px) scale(1);
+        text-shadow: 0 0 5px #00b0ff;
+    }
 }
-.player-bottom-node {
-    display: inline-flex;
-    align-items: center;
-    position: relative;
+
+.charge-yeh {
+    display: inline-block;
     font-weight: 900;
     color: #00b0ff;
     letter-spacing: 2px;
-    text-shadow: 0 0 6px #80d8ff;
-    animation: playerBottomSwing 2.0s infinite ease-in-out;
-    z-index: 10;
-}
-
-/* 球拍揮擊動畫 */
-@keyframes racketHitTop {
-    0%, 100% { transform: rotate(0deg); }
-    15% { transform: rotate(-40deg) scale(1.2); }
-    50% { transform: rotate(10deg); }
-}
-.racket-icon-top {
-    display: inline-block;
-    font-size: 19px;
-    margin-left: 5px;
-    animation: racketHitTop 2.0s infinite ease-in-out;
-}
-
-@keyframes racketHitBottom {
-    0%, 100% { transform: rotate(0deg); }
-    60% { transform: rotate(-40deg) scale(1.2); }
-    75% { transform: rotate(10deg); }
-}
-.racket-icon-bottom {
-    display: inline-block;
-    font-size: 19px;
-    margin-left: 5px;
-    animation: racketHitBottom 2.0s infinite ease-in-out;
-}
-
-/* 3. 真・羽毛球（純 CSS/SVG 繪製，來回垂直飛越扣殺） */
-@keyframes flyShuttlecock {
-    0% {
-        /* 俊丞球拍出發 */
-        top: 2px;
-        left: 20px;
-        transform: rotate(175deg) scale(0.9);
-        filter: drop-shadow(0 0 6px #ff3b00);
-    }
-    45% {
-        /* 俯衝飛向臨恩 */
-        top: calc(100% - 10px);
-        left: 30px;
-        transform: rotate(190deg) scale(1.15);
-        filter: drop-shadow(0 0 10px #ffea00);
-    }
-    50% {
-        /* 精確打中臨恩球拍 (反彈折返) */
-        top: calc(100% + 2px);
-        left: 35px;
-        transform: rotate(10deg) scale(1.25);
-        filter: drop-shadow(0 0 12px #00e5ff);
-    }
-    95% {
-        /* 高遠球抽回俊丞 */
-        top: 15px;
-        left: 10px;
-        transform: rotate(-25deg) scale(1.0);
-        filter: drop-shadow(0 0 8px #80d8ff);
-    }
-    100% {
-        top: 2px;
-        left: 20px;
-        transform: rotate(175deg) scale(0.9);
-        filter: drop-shadow(0 0 6px #ff3b00);
-    }
-}
-
-.badminton-ball-entity {
-    position: absolute;
-    width: 22px;
-    height: 22px;
-    pointer-events: none;
-    animation: flyShuttlecock 2.0s infinite ease-in-out;
-    z-index: 999;
-}
-
-.badminton-ball-entity svg {
-    width: 100%;
-    height: 100%;
+    animation: chargeLeft 1.5s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .custom-table {
@@ -339,7 +293,6 @@ st.markdown("""
     border-collapse: collapse;
     margin-bottom: 20px;
     font-size: 15px;
-    position: relative;
 }
 .custom-table th, .custom-table td {
     padding: 14px 10px;
@@ -353,21 +306,6 @@ st.markdown("""
 }
 </style>
 """, unsafe_allow_html=True)
-
-# 羽毛球實體 SVG 圖示（白色羽冠 + 軟木塞球頭）
-SHUTTLE_ICON = """
-<div class="badminton-ball-entity">
-    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M14 16 L32 50 L50 16 Z" fill="#ffffff" stroke="#444444" stroke-width="2.5"/>
-        <line x1="22" y1="18" x2="32" y2="48" stroke="#bbbbbb" stroke-width="2"/>
-        <line x1="32" y1="16" x2="32" y2="50" stroke="#bbbbbb" stroke-width="2"/>
-        <line x1="42" y1="18" x2="32" y2="48" stroke="#bbbbbb" stroke-width="2"/>
-        <path d="M16 26 Q32 32 48 26" stroke="#0070f3" stroke-width="3" fill="none"/>
-        <path d="M20 36 Q32 41 44 36" stroke="#0070f3" stroke-width="3" fill="none"/>
-        <circle cx="32" cy="52" r="7.5" fill="#d7ccc8" stroke="#5d4037" stroke-width="2.5"/>
-    </svg>
-</div>
-"""
 
 # --- 點餐區 ---
 st.subheader("📝 我要點餐")
@@ -429,7 +367,7 @@ orders_df = load_orders()
 if not orders_df.empty:
     has_chen = any("俊丞" in str(name) for name in orders_df["姓名"])
     has_yeh = any("臨恩" in str(name) for name in orders_df["姓名"])
-    is_playing_badminton = has_chen and has_yeh
+    is_clashing = has_chen and has_yeh
 
     total_qty = len(orders_df)
     total_amount = orders_df["金額"].sum()
@@ -445,27 +383,18 @@ if not orders_df.empty:
     # 2. 依人名統計每人應付金額
     st.markdown("**【每人應收金額】**")
     person_df = orders_df.groupby("姓名")["金額"].sum().reset_index(name="應付金額")
-    
-    # 兩人都點餐時：自動將俊丞排在上方第一位、臨恩排在下方最後一位，展開精準羽毛球對打！
-    if is_playing_badminton:
-        chen_row = person_df[person_df["姓名"].str.contains("俊丞", na=False)]
-        yeh_row = person_df[person_df["姓名"].str.contains("臨恩", na=False)]
-        other_rows = person_df[~person_df["姓名"].str.contains("俊丞|臨恩", na=False)]
-        person_df = pd.concat([chen_row, other_rows, yeh_row], ignore_index=True)
 
     person_html = '<table class="custom-table"><thead><tr><th>姓名</th><th>應付金額</th></tr></thead><tbody>'
     for idx, row in person_df.iterrows():
         name_str = str(row["姓名"])
         if "俊丞" in name_str:
-            if is_playing_badminton:
-                # 俊丞在上方揮拍發射真・羽毛球
-                name_display = f'<span class="player-top-node">{name_str}<span class="racket-icon-top">🏸</span>{SHUTTLE_ICON}</span>'
+            if is_clashing:
+                name_display = f'<span class="charge-chen">{name_str}</span>'
             else:
                 name_display = f'<span class="flame-solo">{name_str}</span>'
         elif "臨恩" in name_str:
-            if is_playing_badminton:
-                # 臨恩在下方接球反抽
-                name_display = f'<span class="player-bottom-node">{name_str}<span class="racket-icon-bottom">🏸</span></span>'
+            if is_clashing:
+                name_display = f'<span class="charge-yeh">{name_str}</span>'
             else:
                 name_display = f'<span class="ice-solo">{name_str}</span>'
         else:
@@ -481,13 +410,13 @@ if not orders_df.empty:
     for idx, row in orders_df.iterrows():
         name_str = str(row["姓名"])
         if "俊丞" in name_str:
-            if is_playing_badminton:
-                name_display = f'<span class="player-top-node">{name_str}<span class="racket-icon-top">🏸</span></span>'
+            if is_clashing:
+                name_display = f'<span class="charge-chen">{name_str}</span>'
             else:
                 name_display = f'<span class="flame-solo">{name_str}</span>'
         elif "臨恩" in name_str:
-            if is_playing_badminton:
-                name_display = f'<span class="player-bottom-node">{name_str}<span class="racket-icon-bottom">🏸</span></span>'
+            if is_clashing:
+                name_display = f'<span class="charge-yeh">{name_str}</span>'
             else:
                 name_display = f'<span class="ice-solo">{name_str}</span>'
         else:
