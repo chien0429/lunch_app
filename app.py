@@ -189,7 +189,7 @@ RESTAURANT_MENUS = {
     }
 }
 
-# 動態產生精確碰撞與零延遲爆炸 CSS
+# 動態產生零延遲、對稱相撞大爆炸 CSS
 def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=52):
     if top_idx is None or btm_idx is None or top_idx == btm_idx:
         return ""
@@ -198,93 +198,61 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=52):
     
     return f"""
     <style>
-    /* 上方選手：0-15% 蓄力 -> 15-45% 加速衝刺 -> 45% 精確相撞 -> 45-55% 震退 -> 100% 回位 */
+    /* 上方選手：0-18% 蓄力 -> 18-50% 極速俯衝 -> 50% 正好到達中心相撞 -> 50-60% 震退 */
     @keyframes smashDown_{table_id} {{
-        0% {{
-            transform: translateY(0px) scale(1);
-            filter: brightness(1);
-            animation-timing-function: ease-in;
-        }}
-        15% {{
-            transform: translateY(-8px) scale(0.96);
-            filter: brightness(1.2);
-            animation-timing-function: ease-in;
-        }}
-        45% {{ 
+        0% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
+        18% {{ transform: translateY(-8px) scale(0.96); filter: brightness(1.2); }}
+        50% {{ 
             transform: translateY({distance_px}px) scale(1.35) rotate(-3deg); 
             filter: brightness(2.8) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #ff3300);
-            animation-timing-function: ease-out;
         }}
-        55% {{ 
+        58% {{ 
             transform: translateY({int(distance_px * 0.45)}px) scale(1.1) rotate(4deg); 
             filter: brightness(1.5) drop-shadow(0 0 15px #ff8800);
-            animation-timing-function: ease-in-out;
         }}
-        75% {{ 
-            transform: translateY({int(distance_px * 0.08)}px) scale(1.02); 
-            animation-timing-function: ease-in-out;
-        }}
-        100% {{ 
-            transform: translateY(0px) scale(1); 
-            filter: brightness(1); 
-        }}
+        75% {{ transform: translateY({int(distance_px * 0.08)}px) scale(1.02); }}
+        100% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
     }}
 
-    /* 下方選手：0-15% 蓄力 -> 15-45% 加速衝刺 -> 45% 精確相撞 -> 45-55% 震退 -> 100% 回位 */
+    /* 下方選手：0-18% 蓄力 -> 18-50% 極速衝天 -> 50% 正好到達中心相撞 -> 50-60% 震退 */
     @keyframes smashUp_{table_id} {{
-        0% {{
-            transform: translateY(0px) scale(1);
-            filter: brightness(1);
-            animation-timing-function: ease-in;
-        }}
-        15% {{
-            transform: translateY(8px) scale(0.96);
-            filter: brightness(1.2);
-            animation-timing-function: ease-in;
-        }}
-        45% {{ 
+        0% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
+        18% {{ transform: translateY(8px) scale(0.96); filter: brightness(1.2); }}
+        50% {{ 
             transform: translateY(-{distance_px}px) scale(1.35) rotate(3deg); 
             filter: brightness(2.8) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #00e5ff);
-            animation-timing-function: ease-out;
         }}
-        55% {{ 
+        58% {{ 
             transform: translateY(-{int(distance_px * 0.45)}px) scale(1.1) rotate(-4deg); 
             filter: brightness(1.5) drop-shadow(0 0 15px #00b0ff);
-            animation-timing-function: ease-in-out;
         }}
-        75% {{ 
-            transform: translateY(-{int(distance_px * 0.08)}px) scale(1.02); 
-            animation-timing-function: ease-in-out;
-        }}
-        100% {{ 
-            transform: translateY(0px) scale(1); 
-            filter: brightness(1); 
-        }}
+        75% {{ transform: translateY(-{int(distance_px * 0.08)}px) scale(1.02); }}
+        100% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
     }}
 
-    /* 中心大爆炸：45% 碰觸瞬間零延遲炸裂，55% 快速擴散消散 */
+    /* 中心大爆炸：50% 相撞瞬間零時差爆發，58% 擴散消散，絕不拖泥帶水 */
     @keyframes explosionSupernova_{table_id} {{
-        0%, 44% {{ 
+        0%, 48% {{ 
             opacity: 0; 
             transform: translate(-50%, -50%) scale(0.1) rotate(0deg); 
         }}
-        45% {{ 
+        50% {{ 
             opacity: 1; 
             transform: translate(-50%, -50%) scale(4.0) rotate(45deg); 
             box-shadow: 0 0 35px #ffffff, 0 0 70px #ffea00, 0 0 100px #ff3300, 0 0 120px #00e5ff;
         }}
-        50% {{ 
-            opacity: 0.9; 
+        55% {{ 
+            opacity: 0.75; 
             transform: translate(-50%, -50%) scale(5.8) rotate(90deg); 
             box-shadow: 0 0 50px rgba(255,255,255,1), 0 0 90px rgba(255,69,0,0.8), 0 0 115px rgba(0,229,255,0.8);
         }}
-        55% {{ 
+        58% {{ 
             opacity: 0; 
             transform: translate(-50%, -50%) scale(7.2) rotate(140deg); 
         }}
         100% {{ 
             opacity: 0; 
-            transform: translate(-50%, -50%) scale(7.2); 
+            transform: translate(-50%, -50%) scale(0.1); 
         }}
     }}
 
@@ -293,7 +261,7 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=52):
         position: relative;
         font-weight: 900;
         letter-spacing: 2px;
-        animation: smashDown_{table_id} 1.6s infinite;
+        animation: smashDown_{table_id} 1.6s infinite ease-in-out;
         z-index: 25;
     }}
 
@@ -302,7 +270,7 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=52):
         position: relative;
         font-weight: 900;
         letter-spacing: 2px;
-        animation: smashUp_{table_id} 1.6s infinite;
+        animation: smashUp_{table_id} 1.6s infinite ease-in-out;
         z-index: 25;
     }}
 
@@ -315,7 +283,7 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=52):
         border-radius: 50%;
         background: radial-gradient(circle, #ffffff 15%, #ffff77 35%, #ff4500 65%, #00e5ff 90%, transparent 100%);
         pointer-events: none;
-        animation: explosionSupernova_{table_id} 1.6s infinite;
+        animation: explosionSupernova_{table_id} 1.6s infinite ease-out;
         z-index: 999;
     }}
     </style>
@@ -486,7 +454,6 @@ def render_player_flame(name_str, table_id="", is_top=None):
     if is_top is None:
         return f'<span class="flame-name-wrapper">{name_str}<span class="flame-spark-1"></span><span class="flame-spark-2"></span></span>'
     if is_top:
-        # 僅在上方選手綁定中心碰撞點爆炸核
         return f'<span class="smash-top-{table_id}"><span class="flame-name-wrapper">{name_str}<span class="flame-spark-1"></span><span class="flame-spark-2"></span></span><span class="explosion-core-{table_id}"></span></span>'
     return f'<span class="smash-bottom-{table_id}"><span class="flame-name-wrapper">{name_str}<span class="flame-spark-1"></span><span class="flame-spark-2"></span></span></span>'
 
@@ -494,7 +461,6 @@ def render_player_ice(name_str, table_id="", is_top=None):
     if is_top is None:
         return f'<span class="ice-name-wrapper">{name_str}<span class="ice-crystal-1"></span><span class="ice-crystal-2"></span></span>'
     if is_top:
-        # 僅在上方選手綁定中心碰撞點爆炸核
         return f'<span class="smash-top-{table_id}"><span class="ice-name-wrapper">{name_str}<span class="ice-crystal-1"></span><span class="ice-crystal-2"></span></span><span class="explosion-core-{table_id}"></span></span>'
     return f'<span class="smash-bottom-{table_id}"><span class="ice-name-wrapper">{name_str}<span class="ice-crystal-1"></span><span class="ice-crystal-2"></span></span></span>'
 
@@ -621,18 +587,16 @@ if not orders_df.empty:
     detail_html = '<table class="custom-table"><thead><tr><th>店家</th><th>姓名</th><th>餐點</th><th>金額</th><th>備註</th></tr></thead><tbody>'
     for idx, row in orders_df.iterrows():
         name_str = str(row["姓名"])
-        if "俊丞" in name_str:
-            if is_clashing and d_chen_idx is not None and d_yeh_idx is not None:
-                is_top = (d_chen_idx < d_yeh_idx)
-                name_display = render_player_flame(name_str, table_id="detail", is_top=is_top)
-            else:
-                name_display = render_player_flame(name_str)
+        if idx == d_chen_idx:
+            is_top = (d_chen_idx < d_yeh_idx)
+            name_display = render_player_flame(name_str, table_id="detail", is_top=is_top)
+        elif idx == d_yeh_idx:
+            is_top = (d_yeh_idx < d_chen_idx)
+            name_display = render_player_ice(name_str, table_id="detail", is_top=is_top)
+        elif "俊丞" in name_str:
+            name_display = render_player_flame(name_str)
         elif "臨恩" in name_str:
-            if is_clashing and d_chen_idx is not None and d_yeh_idx is not None:
-                is_top = (d_yeh_idx < d_chen_idx)
-                name_display = render_player_ice(name_str, table_id="detail", is_top=is_top)
-            else:
-                name_display = render_player_ice(name_str)
+            name_display = render_player_ice(name_str)
         else:
             name_display = name_str
 
