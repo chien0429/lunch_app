@@ -189,7 +189,7 @@ RESTAURANT_MENUS = {
     }
 }
 
-# 注入名牌左右對撞動畫 CSS
+# 注入名牌【上下縱向對撞】動畫 CSS
 st.markdown("""
 <style>
 /* 常態烈焰字體（僅俊丞一人時） */
@@ -218,74 +218,98 @@ st.markdown("""
     animation: iceSolo 1.4s infinite alternate ease-in-out;
 }
 
-/* 俊丞（烈焰衝撞）：從左側蓄力 ➔ 猛烈向右衝擊 ➔ 撞擊震退 */
-@keyframes chargeRight {
+/* 1. 上方選手：向下猛烈俯衝泰山壓頂 */
+@keyframes smashDown {
     0% {
-        transform: translateX(0px) scale(1);
-        text-shadow: 0 0 5px #ff4500;
+        transform: translateY(0px) scale(1);
+        text-shadow: 0 0 4px #ff4500;
     }
-    35% {
-        /* 蓄力後撤 */
-        transform: translateX(-15px) scale(0.95);
+    30% {
+        /* 蓄力向上後撤 */
+        transform: translateY(-12px) scale(0.95);
         text-shadow: 0 0 12px #ff2200, 0 0 20px #ffaa00;
     }
     50% {
-        /* 猛烈衝向右方中央碰撞！ */
-        transform: translateX(45px) scale(1.18);
-        text-shadow: 0 0 25px #ffff00, 0 0 40px #ff0000;
+        /* 向下重扣撞擊！ */
+        transform: translateY(32px) scale(1.18);
+        text-shadow: 0 0 25px #ffffff, 0 0 35px #ff0000, 0 0 45px #ffff00;
     }
     60% {
-        /* 碰撞彈回受力震動 */
-        transform: translateX(5px) scale(1.05);
+        /* 碰撞震退反彈 */
+        transform: translateY(6px) scale(1.05);
         text-shadow: 0 0 15px #ff5500;
     }
     100% {
-        transform: translateX(0px) scale(1);
-        text-shadow: 0 0 5px #ff4500;
+        transform: translateY(0px) scale(1);
+        text-shadow: 0 0 4px #ff4500;
     }
 }
 
-.charge-chen {
+.smash-top-flame {
     display: inline-block;
+    position: relative;
     font-weight: 900;
     color: #ff3b00;
     letter-spacing: 2px;
-    animation: chargeRight 1.5s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    animation: smashDown 1.4s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    z-index: 20;
 }
 
-/* 臨恩（極冰衝撞）：從右側蓄力 ➔ 猛烈向左衝擊 ➔ 撞擊震退 */
-@keyframes chargeLeft {
-    0% {
-        transform: translateX(0px) scale(1);
-        text-shadow: 0 0 5px #00b0ff;
-    }
-    35% {
-        /* 蓄力後撤 */
-        transform: translateX(15px) scale(0.95);
-        text-shadow: 0 0 12px #0070f3, 0 0 20px #80d8ff;
-    }
-    50% {
-        /* 猛烈衝向左方中央碰撞！ */
-        transform: translateX(-45px) scale(1.18);
-        text-shadow: 0 0 25px #ffffff, 0 0 40px #00e5ff;
-    }
-    60% {
-        /* 碰撞彈回受力震動 */
-        transform: translateX(-5px) scale(1.05);
-        text-shadow: 0 0 15px #0091ea;
-    }
-    100% {
-        transform: translateX(0px) scale(1);
-        text-shadow: 0 0 5px #00b0ff;
-    }
-}
-
-.charge-yeh {
+.smash-top-ice {
     display: inline-block;
+    position: relative;
     font-weight: 900;
     color: #00b0ff;
     letter-spacing: 2px;
-    animation: chargeLeft 1.5s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    animation: smashDown 1.4s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    z-index: 20;
+}
+
+/* 2. 下方選手：向上拔地沖天迎頭撞擊 */
+@keyframes smashUp {
+    0% {
+        transform: translateY(0px) scale(1);
+        text-shadow: 0 0 4px #00b0ff;
+    }
+    30% {
+        /* 蓄力向下深蹲後撤 */
+        transform: translateY(12px) scale(0.95);
+        text-shadow: 0 0 12px #0070f3, 0 0 20px #80d8ff;
+    }
+    50% {
+        /* 向上沖天迎擊碰撞！ */
+        transform: translateY(-32px) scale(1.18);
+        text-shadow: 0 0 25px #ffffff, 0 0 35px #00e5ff, 0 0 45px #2979ff;
+    }
+    60% {
+        /* 碰撞震退反彈 */
+        transform: translateY(-6px) scale(1.05);
+        text-shadow: 0 0 15px #0091ea;
+    }
+    100% {
+        transform: translateY(0px) scale(1);
+        text-shadow: 0 0 4px #00b0ff;
+    }
+}
+
+.smash-bottom-flame {
+    display: inline-block;
+    position: relative;
+    font-weight: 900;
+    color: #ff3b00;
+    letter-spacing: 2px;
+    animation: smashUp 1.4s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    z-index: 20;
+}
+
+.smash-bottom-ice {
+    display: inline-block;
+    position: relative;
+    font-weight: 900;
+    color: #00b0ff;
+    letter-spacing: 2px;
+    animation: smashUp 1.4s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    z-index: 20;
 }
 
 .custom-table {
@@ -293,6 +317,7 @@ st.markdown("""
     border-collapse: collapse;
     margin-bottom: 20px;
     font-size: 15px;
+    position: relative;
 }
 .custom-table th, .custom-table td {
     padding: 14px 10px;
@@ -384,17 +409,32 @@ if not orders_df.empty:
     st.markdown("**【每人應收金額】**")
     person_df = orders_df.groupby("姓名")["金額"].sum().reset_index(name="應付金額")
 
+    # 動態計算人名表中的上下順序
+    p_names = person_df["姓名"].tolist()
+    p_chen_idx = next((i for i, n in enumerate(p_names) if "俊丞" in str(n)), None)
+    p_yeh_idx = next((i for i, n in enumerate(p_names) if "臨恩" in str(n)), None)
+
     person_html = '<table class="custom-table"><thead><tr><th>姓名</th><th>應付金額</th></tr></thead><tbody>'
     for idx, row in person_df.iterrows():
         name_str = str(row["姓名"])
         if "俊丞" in name_str:
-            if is_clashing:
-                name_display = f'<span class="charge-chen">{name_str}</span>'
+            if is_clashing and p_chen_idx is not None and p_yeh_idx is not None:
+                if p_chen_idx < p_yeh_idx:
+                    # 俊丞在上：向下猛烈俯衝
+                    name_display = f'<span class="smash-top-flame">{name_str}</span>'
+                else:
+                    # 俊丞在下：向上沖天迎擊
+                    name_display = f'<span class="smash-bottom-flame">{name_str}</span>'
             else:
                 name_display = f'<span class="flame-solo">{name_str}</span>'
         elif "臨恩" in name_str:
-            if is_clashing:
-                name_display = f'<span class="charge-yeh">{name_str}</span>'
+            if is_clashing and p_chen_idx is not None and p_yeh_idx is not None:
+                if p_yeh_idx < p_chen_idx:
+                    # 臨恩在上：向下猛烈俯衝
+                    name_display = f'<span class="smash-top-ice">{name_str}</span>'
+                else:
+                    # 臨恩在下：向上沖天迎擊
+                    name_display = f'<span class="smash-bottom-ice">{name_str}</span>'
             else:
                 name_display = f'<span class="ice-solo">{name_str}</span>'
         else:
@@ -406,17 +446,27 @@ if not orders_df.empty:
 
     # 3. 詳細點餐名冊
     st.markdown("**【詳細點餐名冊】**")
+    d_names = orders_df["姓名"].tolist()
+    d_chen_idx = next((i for i, n in enumerate(d_names) if "俊丞" in str(n)), None)
+    d_yeh_idx = next((i for i, n in enumerate(d_names) if "臨恩" in str(n)), None)
+
     detail_html = '<table class="custom-table"><thead><tr><th>店家</th><th>姓名</th><th>餐點</th><th>金額</th><th>備註</th></tr></thead><tbody>'
     for idx, row in orders_df.iterrows():
         name_str = str(row["姓名"])
         if "俊丞" in name_str:
-            if is_clashing:
-                name_display = f'<span class="charge-chen">{name_str}</span>'
+            if is_clashing and d_chen_idx is not None and d_yeh_idx is not None:
+                if d_chen_idx < d_yeh_idx:
+                    name_display = f'<span class="smash-top-flame">{name_str}</span>'
+                else:
+                    name_display = f'<span class="smash-bottom-flame">{name_str}</span>'
             else:
                 name_display = f'<span class="flame-solo">{name_str}</span>'
         elif "臨恩" in name_str:
-            if is_clashing:
-                name_display = f'<span class="charge-yeh">{name_str}</span>'
+            if is_clashing and d_chen_idx is not None and d_yeh_idx is not None:
+                if d_yeh_idx < d_chen_idx:
+                    name_display = f'<span class="smash-top-ice">{name_str}</span>'
+                else:
+                    name_display = f'<span class="smash-bottom-ice">{name_str}</span>'
             else:
                 name_display = f'<span class="ice-solo">{name_str}</span>'
         else:
