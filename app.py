@@ -189,7 +189,7 @@ RESTAURANT_MENUS = {
     }
 }
 
-# 動態計算相隔行數並產生「精確相遇 + 爆炸」CSS 樣式
+# 動態產生精確碰撞與超新星爆炸 CSS
 def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=52):
     if top_idx is None or btm_idx is None or top_idx == btm_idx:
         return ""
@@ -198,57 +198,57 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=52):
     
     return f"""
     <style>
-    /* 上方選手：精確俯衝到中心點 */
+    /* 上方選手：精確俯衝到碰撞中心點 */
     @keyframes smashDown_{table_id} {{
         0% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
         25% {{ transform: translateY(-10px) scale(0.95); filter: brightness(1.2); }}
         50% {{ 
-            transform: translateY({distance_px}px) scale(1.35) rotate(-4deg); 
-            filter: brightness(2.5) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #ff3300);
+            transform: translateY({distance_px}px) scale(1.32) rotate(-3deg); 
+            filter: brightness(2.6) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #ff3300);
         }}
         58% {{ 
-            transform: translateY({int(distance_px * 0.65)}px) scale(1.1) rotate(5deg); 
+            transform: translateY({int(distance_px * 0.65)}px) scale(1.1) rotate(4deg); 
             filter: brightness(1.6) drop-shadow(0 0 15px #ff8800);
         }}
         75% {{ transform: translateY({int(distance_px * 0.15)}px) scale(1.02); }}
         100% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
     }}
 
-    /* 下方選手：精確拔地衝天到中心點 */
+    /* 下方選手：精確衝天到碰撞中心點 */
     @keyframes smashUp_{table_id} {{
         0% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
         25% {{ transform: translateY(10px) scale(0.95); filter: brightness(1.2); }}
         50% {{ 
-            transform: translateY(-{distance_px}px) scale(1.35) rotate(4deg); 
-            filter: brightness(2.5) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #00e5ff);
+            transform: translateY(-{distance_px}px) scale(1.32) rotate(3deg); 
+            filter: brightness(2.6) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #00e5ff);
         }}
         58% {{ 
-            transform: translateY(-{int(distance_px * 0.65)}px) scale(1.1) rotate(-5deg); 
+            transform: translateY(-{int(distance_px * 0.65)}px) scale(1.1) rotate(-4deg); 
             filter: brightness(1.6) drop-shadow(0 0 15px #00b0ff);
         }}
         75% {{ transform: translateY(-{int(distance_px * 0.15)}px) scale(1.02); }}
         100% {{ transform: translateY(0px) scale(1); filter: brightness(1); }}
     }}
 
-    /* 爆炸衝擊波（位於上方選手中心，隨上方選手抵達碰撞點時原地引爆，不再重複位移） */
-    @keyframes explosionBurst_{table_id} {{
+    /* 超新星大爆炸（錨定於上方選手，抵達中心時原地引爆，不再重複位移） */
+    @keyframes explosionSupernova_{table_id} {{
         0%, 44% {{ 
             opacity: 0; 
-            transform: translate(-50%, -50%) scale(0.1); 
+            transform: translate(-50%, -50%) scale(0.1) rotate(0deg); 
         }}
         50% {{ 
             opacity: 1; 
-            transform: translate(-50%, -50%) scale(3.5); 
-            box-shadow: 0 0 35px #ffffff, 0 0 60px #ffea00, 0 0 90px #ff3300, 0 0 110px #00e5ff;
+            transform: translate(-50%, -50%) scale(4.0) rotate(45deg); 
+            box-shadow: 0 0 35px #ffffff, 0 0 70px #ffea00, 0 0 100px #ff3300, 0 0 120px #00e5ff;
         }}
         60% {{ 
             opacity: 0.9; 
-            transform: translate(-50%, -50%) scale(4.8); 
-            box-shadow: 0 0 45px rgba(255,255,255,0.9), 0 0 80px rgba(255,69,0,0.7), 0 0 100px rgba(0,229,255,0.7);
+            transform: translate(-50%, -50%) scale(5.5) rotate(90deg); 
+            box-shadow: 0 0 50px rgba(255,255,255,0.9), 0 0 90px rgba(255,69,0,0.7), 0 0 110px rgba(0,229,255,0.7);
         }}
         75%, 100% {{ 
             opacity: 0; 
-            transform: translate(-50%, -50%) scale(6.0); 
+            transform: translate(-50%, -50%) scale(7.0) rotate(140deg); 
         }}
     }}
 
@@ -274,46 +274,151 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=52):
         position: absolute;
         top: 50%;
         left: 50%;
-        width: 18px;
-        height: 18px;
+        width: 22px;
+        height: 22px;
         border-radius: 50%;
-        background: radial-gradient(circle, #ffffff 10%, #ffff77 30%, #ff4500 65%, #00e5ff 90%, transparent 100%);
+        background: radial-gradient(circle, #ffffff 15%, #ffff77 35%, #ff4500 65%, #00e5ff 90%, transparent 100%);
         pointer-events: none;
-        animation: explosionBurst_{table_id} 1.8s infinite ease-out;
+        animation: explosionSupernova_{table_id} 1.8s infinite ease-out;
         z-index: 999;
     }}
     </style>
     """
 
-# 注入基本表格與常態字體樣式
+# 注入電影級【流動烈焰・飄浮火星】與【極光冰霜・碎雪冰晶】CSS 樣式
 st.markdown("""
 <style>
-/* 常態烈焰字體（僅俊丞一人時） */
-@keyframes flameSolo {
-    0% { color: #ff3b00; text-shadow: 0 0 5px #ffaa00, 0 0 10px #ff2200; }
-    50% { color: #ff8800; text-shadow: 0 0 10px #ffff00, 0 0 18px #ff4400; }
-    100% { color: #ff3b00; text-shadow: 0 0 5px #ffaa00, 0 0 10px #ff2200; }
+/* ================== 1. 陳俊丞：流動烈焰 + 升騰火星 ================== */
+@keyframes flameFlow {
+    0% {
+        background-position: 0% 50%;
+        filter: drop-shadow(0 0 4px #ff3300) drop-shadow(0 0 8px #ff9900);
+    }
+    50% {
+        background-position: 100% 50%;
+        filter: drop-shadow(0 0 8px #ff0000) drop-shadow(0 0 14px #ffff00);
+    }
+    100% {
+        background-position: 0% 50%;
+        filter: drop-shadow(0 0 4px #ff3300) drop-shadow(0 0 8px #ff9900);
+    }
 }
-.flame-solo {
-    display: inline-block;
-    font-weight: 900;
-    letter-spacing: 2px;
-    animation: flameSolo 1.2s infinite alternate ease-in-out;
+@keyframes sparkRise1 {
+    0%   { opacity: 0; transform: translate(0, 0) scale(0.4); }
+    30%  { opacity: 1; transform: translate(-8px, -10px) scale(1); }
+    70%  { opacity: 0.8; transform: translate(-14px, -24px) scale(0.8); }
+    100% { opacity: 0; transform: translate(-18px, -36px) scale(0.2); }
+}
+@keyframes sparkRise2 {
+    0%   { opacity: 0; transform: translate(0, 0) scale(0.4); }
+    30%  { opacity: 1; transform: translate(10px, -12px) scale(1.1); }
+    70%  { opacity: 0.8; transform: translate(16px, -26px) scale(0.7); }
+    100% { opacity: 0; transform: translate(22px, -38px) scale(0.2); }
 }
 
-/* 常態極冰字體（僅臨恩一人時） */
-@keyframes iceSolo {
-    0% { color: #0091ea; text-shadow: 0 0 5px #80d8ff, 0 0 10px #00e5ff; }
-    50% { color: #00e5ff; text-shadow: 0 0 10px #ffffff, 0 0 18px #00b0ff; }
-    100% { color: #0091ea; text-shadow: 0 0 5px #80d8ff, 0 0 10px #00e5ff; }
-}
-.ice-solo {
-    display: inline-block;
+.flame-name-wrapper {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
     font-weight: 900;
     letter-spacing: 2px;
-    animation: iceSolo 1.4s infinite alternate ease-in-out;
+    background: linear-gradient(90deg, #ff0844, #ffb199, #ff7e40, #ff0844);
+    background-size: 250% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: flameFlow 2.0s infinite linear;
+}
+.flame-spark-1 {
+    position: absolute;
+    top: 50%;
+    left: 20%;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #ffffff 10%, #ffea00 40%, #ff3300 100%);
+    box-shadow: 0 0 8px #ff5500;
+    pointer-events: none;
+    animation: sparkRise1 1.6s infinite ease-out;
+}
+.flame-spark-2 {
+    position: absolute;
+    top: 50%;
+    right: 20%;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #ffffff 10%, #ffff33 40%, #ff2200 100%);
+    box-shadow: 0 0 9px #ff3300;
+    pointer-events: none;
+    animation: sparkRise2 1.8s infinite ease-out 0.4s;
 }
 
+/* ================== 2. 葉臨恩：極光冰晶 + 旋轉碎雪 ================== */
+@keyframes iceAuroraFlow {
+    0% {
+        background-position: 0% 50%;
+        filter: drop-shadow(0 0 4px #00b0ff) drop-shadow(0 0 8px #00e5ff);
+    }
+    50% {
+        background-position: 100% 50%;
+        filter: drop-shadow(0 0 8px #0070f3) drop-shadow(0 0 14px #ffffff);
+    }
+    100% {
+        background-position: 0% 50%;
+        filter: drop-shadow(0 0 4px #00b0ff) drop-shadow(0 0 8px #00e5ff);
+    }
+}
+@keyframes snowDrift1 {
+    0%   { opacity: 0; transform: translate(0, 0) rotate(0deg) scale(0.4); }
+    30%  { opacity: 1; transform: translate(-10px, 8px) rotate(90deg) scale(1); }
+    70%  { opacity: 0.9; transform: translate(-16px, 18px) rotate(180deg) scale(0.9); }
+    100% { opacity: 0; transform: translate(-22px, 28px) rotate(270deg) scale(0.3); }
+}
+@keyframes snowDrift2 {
+    0%   { opacity: 0; transform: translate(0, 0) rotate(0deg) scale(0.4); }
+    30%  { opacity: 1; transform: translate(12px, -8px) rotate(-90deg) scale(1.1); }
+    70%  { opacity: 0.9; transform: translate(18px, -18px) rotate(-180deg) scale(0.8); }
+    100% { opacity: 0; transform: translate(24px, -28px) rotate(-270deg) scale(0.3); }
+}
+
+.ice-name-wrapper {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+    font-weight: 900;
+    letter-spacing: 2px;
+    background: linear-gradient(90deg, #00f2fe, #4facfe, #00c6ff, #ffffff, #00f2fe);
+    background-size: 250% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: iceAuroraFlow 2.2s infinite linear;
+}
+.ice-crystal-1 {
+    position: absolute;
+    top: 30%;
+    left: 15%;
+    width: 6px;
+    height: 6px;
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    background: #ffffff;
+    box-shadow: 0 0 8px #00e5ff;
+    pointer-events: none;
+    animation: snowDrift1 2.0s infinite ease-in-out;
+}
+.ice-crystal-2 {
+    position: absolute;
+    top: 40%;
+    right: 15%;
+    width: 7px;
+    height: 7px;
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    background: #b3e5fc;
+    box-shadow: 0 0 10px #80d8ff;
+    pointer-events: none;
+    animation: snowDrift2 2.3s infinite ease-in-out 0.5s;
+}
+
+/* ================== 表格整體風格 ================== */
 .custom-table {
     width: 100%;
     border-collapse: collapse;
@@ -339,6 +444,21 @@ st.markdown("""
 }
 </style>
 """, unsafe_allow_html=True)
+
+# 渲染角色名牌（常態 vs 對撞）
+def render_player_flame(name_str, table_id="", is_top=None):
+    if is_top is None:
+        return f'<span class="flame-name-wrapper">{name_str}<span class="flame-spark-1"></span><span class="flame-spark-2"></span></span>'
+    if is_top:
+        return f'<span class="smash-top-{table_id}"><span class="flame-name-wrapper">{name_str}<span class="flame-spark-1"></span><span class="flame-spark-2"></span></span><span class="explosion-core-{table_id}"></span></span>'
+    return f'<span class="smash-bottom-{table_id}"><span class="flame-name-wrapper">{name_str}<span class="flame-spark-1"></span><span class="flame-spark-2"></span></span></span>'
+
+def render_player_ice(name_str, table_id="", is_top=None):
+    if is_top is None:
+        return f'<span class="ice-name-wrapper">{name_str}<span class="ice-crystal-1"></span><span class="ice-crystal-2"></span></span>'
+    if is_top:
+        return f'<span class="smash-top-{table_id}"><span class="ice-name-wrapper">{name_str}<span class="ice-crystal-1"></span><span class="ice-crystal-2"></span></span><span class="explosion-core-{table_id}"></span></span>'
+    return f'<span class="smash-bottom-{table_id}"><span class="ice-name-wrapper">{name_str}<span class="ice-crystal-1"></span><span class="ice-crystal-2"></span></span></span>'
 
 # --- 點餐區 ---
 st.subheader("📝 我要點餐")
@@ -417,7 +537,7 @@ if not orders_df.empty:
     st.markdown("**【每人應收金額】**")
     person_df = orders_df.groupby("姓名")["金額"].sum().reset_index(name="應付金額")
 
-    # 計算人名表格中的行距
+    # 計算人名表格中的行距與碰撞
     p_names = person_df["姓名"].tolist()
     p_chen_idx = next((i for i, n in enumerate(p_names) if "俊丞" in str(n)), None)
     p_yeh_idx = next((i for i, n in enumerate(p_names) if "臨恩" in str(n)), None)
@@ -432,24 +552,16 @@ if not orders_df.empty:
         name_str = str(row["姓名"])
         if "俊丞" in name_str:
             if is_clashing and p_chen_idx is not None and p_yeh_idx is not None:
-                if p_chen_idx < p_yeh_idx:
-                    # 俊丞在上：向下俯衝 + 攜帶中心大爆炸
-                    name_display = f'<span class="smash-top-person" style="color:#ff3b00;">{name_str}<span class="explosion-core-person"></span></span>'
-                else:
-                    # 俊丞在下：向上衝天
-                    name_display = f'<span class="smash-bottom-person" style="color:#ff3b00;">{name_str}</span>'
+                is_top = (p_chen_idx < p_yeh_idx)
+                name_display = render_player_flame(name_str, table_id="person", is_top=is_top)
             else:
-                name_display = f'<span class="flame-solo">{name_str}</span>'
+                name_display = render_player_flame(name_str)
         elif "臨恩" in name_str:
             if is_clashing and p_chen_idx is not None and p_yeh_idx is not None:
-                if p_yeh_idx < p_chen_idx:
-                    # 臨恩在上：向下俯衝 + 攜帶中心大爆炸
-                    name_display = f'<span class="smash-top-person" style="color:#00b0ff;">{name_str}<span class="explosion-core-person"></span></span>'
-                else:
-                    # 臨恩在下：向上衝天
-                    name_display = f'<span class="smash-bottom-person" style="color:#00b0ff;">{name_str}</span>'
+                is_top = (p_yeh_idx < p_chen_idx)
+                name_display = render_player_ice(name_str, table_id="person", is_top=is_top)
             else:
-                name_display = f'<span class="ice-solo">{name_str}</span>'
+                name_display = render_player_ice(name_str)
         else:
             name_display = name_str
         
@@ -473,24 +585,16 @@ if not orders_df.empty:
         name_str = str(row["姓名"])
         if "俊丞" in name_str:
             if is_clashing and d_chen_idx is not None and d_yeh_idx is not None:
-                if d_chen_idx < d_yeh_idx:
-                    # 俊丞在上：向下俯衝 + 攜帶中心大爆炸
-                    name_display = f'<span class="smash-top-detail" style="color:#ff3b00;">{name_str}<span class="explosion-core-detail"></span></span>'
-                else:
-                    # 俊丞在下：向上衝天
-                    name_display = f'<span class="smash-bottom-detail" style="color:#ff3b00;">{name_str}</span>'
+                is_top = (d_chen_idx < d_yeh_idx)
+                name_display = render_player_flame(name_str, table_id="detail", is_top=is_top)
             else:
-                name_display = f'<span class="flame-solo">{name_str}</span>'
+                name_display = render_player_flame(name_str)
         elif "臨恩" in name_str:
             if is_clashing and d_chen_idx is not None and d_yeh_idx is not None:
-                if d_yeh_idx < d_chen_idx:
-                    # 臨恩在上：向下俯衝 + 攜帶中心大爆炸
-                    name_display = f'<span class="smash-top-detail" style="color:#00b0ff;">{name_str}<span class="explosion-core-detail"></span></span>'
-                else:
-                    # 臨恩在下：向上衝天
-                    name_display = f'<span class="smash-bottom-detail" style="color:#00b0ff;">{name_str}</span>'
+                is_top = (d_yeh_idx < d_chen_idx)
+                name_display = render_player_ice(name_str, table_id="detail", is_top=is_top)
             else:
-                name_display = f'<span class="ice-solo">{name_str}</span>'
+                name_display = render_player_ice(name_str)
         else:
             name_display = name_str
 
