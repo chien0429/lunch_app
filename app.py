@@ -198,7 +198,7 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
     
     return f"""
     <style>
-    /* 上方選手：0-15% 蓄力 -> 15-50% 全速加速衝刺(ease-in) -> 50% 碰觸最高速 -> 50-65% 震退彈回(ease-out) -> 65-100% 絕對靜止 */
+    /* 上方選手：0-15% 蓄力 -> 15-50% 全速加速衝刺(ease-in) -> 50% 碰觸最高速 -> 50-65% 震退彈回(ease-out) -> 75-100% 絕對靜止 */
     @keyframes smashDown_{table_id} {{
         0% {{
             transform: translateY(0px) scale(1);
@@ -230,7 +230,7 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
         }}
     }}
 
-    /* 下方選手：0-15% 蓄力 -> 15-50% 全速加速衝刺(ease-in) -> 50% 碰觸最高速 -> 50-65% 震退彈回(ease-out) -> 65-100% 絕對靜止 */
+    /* 下方選手：0-15% 蓄力 -> 15-50% 全速加速衝刺(ease-in) -> 50% 碰觸最高速 -> 50-65% 震退彈回(ease-out) -> 75-100% 絕對靜止 */
     @keyframes smashUp_{table_id} {{
         0% {{
             transform: translateY(0px) scale(1);
@@ -606,10 +606,10 @@ if not orders_df.empty:
     detail_html = '<table class="custom-table"><thead><tr><th>店家</th><th>姓名</th><th>餐點</th><th>金額</th><th>備註</th></tr></thead><tbody>'
     for idx, row in orders_df.iterrows():
         name_str = str(row["姓名"])
-        if idx == d_chen_idx:
+        if is_clashing and d_chen_idx is not None and d_yeh_idx is not None and idx == d_chen_idx:
             is_top = (d_chen_idx < d_yeh_idx)
             name_display = render_player_flame(name_str, table_id="detail", is_top=is_top)
-        elif idx == d_yeh_idx:
+        elif is_clashing and d_chen_idx is not None and d_yeh_idx is not None and idx == d_yeh_idx:
             is_top = (d_yeh_idx < d_chen_idx)
             name_display = render_player_ice(name_str, table_id="detail", is_top=is_top)
         elif "俊丞" in name_str:
