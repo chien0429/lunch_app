@@ -40,6 +40,15 @@ MEMBERS = [
 
 # 多店家完整菜單資料庫
 RESTAURANT_MENUS = {
+    "巷仔內豬腳飯": {
+        "滷豬腳飯": 120, "日式肉末咖哩飯": 85, "日式唐揚雞咖哩飯": 110, "日式厚切豬排咖哩飯": 135,
+        "秘滷牛肉飯": 110, "滷香香雞腿飯": 110, "肉燥飯(小)": 35, "肉燥飯(大)": 50, "肉燥便當": 70,
+        "滷豬腳(單點)": 90, "滷牛肉(單點)": 80, "滷筍干": 35, "滷油豆腐": 10,
+        "滷蛋": 15, "白飯": 10, "炒青菜": 30,
+        "餛飩湯": 40, "虱目魚丸湯": 40, "貢丸湯": 40,
+        "麥香紅茶(小)": 10, "麥香紅茶(大)": 20, "冬瓜檸檬(小)": 15, "冬瓜檸檬(大)": 30,
+        "古早味冬瓜茶": 20, "鮮奶茶": 20, "蜂蜜檸檬茶": 20
+    },
     "上宇林": {
         "上宇林青茶": 35, "上宇林紅茶": 35, "三窨花綠茶": 35, "蟲蝕烏龍茶": 35, "東方美人": 35,
         "紅龍茗茶": 35, "綠龍茗茶": 35, "青龍茗茶": 35, "雪浮奶紅茶": 60, "雪浮奶綠茶": 60,
@@ -140,7 +149,7 @@ RESTAURANT_MENUS = {
         "滷棒腿飯": 90, "薄鹽鯖魚飯": 90, "叉燒飯": 95, "養生飯": 95,
         "蒲燒魚飯": 95, "鐵路排骨飯": 95, "炸排骨飯": 95, "爌肉飯": 100,
         "法式豬排飯": 100, "菲力豬排飯": 105, "塔香無骨雞排飯": 105, "香雞排飯": 110,
-        "黑胡椒牛柳飯": 110, "和風烤雞飯": 115, "炸雞腿飯": 120, "挪威鯖魚飯": 130,
+        "黑胡椒牛柳飯": 110, "和風烤雞飯": 115, "炸雞腿飯": 120, "挪威鯖魚飯": 110,
     },
     "貓丼": {
         "雙蛋丼飯": 110, "豬肉蛋丼飯": 140, "牛肉蛋丼飯": 150, "炸豬排蛋丼飯": 170,
@@ -606,18 +615,26 @@ if not orders_df.empty:
     detail_html = '<table class="custom-table"><thead><tr><th>店家</th><th>姓名</th><th>餐點</th><th>金額</th><th>備註</th></tr></thead><tbody>'
     for idx, row in orders_df.iterrows():
         name_str = str(row["姓名"])
-        if is_clashing and d_chen_idx is not None and d_yeh_idx is not None and idx == d_chen_idx:
-            is_top = (d_chen_idx < d_yeh_idx)
-            name_display = render_player_flame(name_str, table_id="detail", is_top=is_top)
-        elif is_clashing and d_chen_idx is not None and d_yeh_idx is not None and idx == d_yeh_idx:
-            is_top = (d_yeh_idx < d_chen_idx)
-            name_display = render_player_ice(name_str, table_id="detail", is_top=is_top)
-        elif "俊丞" in name_str:
-            name_display = render_player_flame(name_str)
-        elif "臨恩" in name_str:
-            name_display = render_player_ice(name_str)
+        if is_clashing and d_chen_idx is not None and d_yeh_idx is not None:
+            if idx == d_chen_idx:
+                is_top = (d_chen_idx < d_yeh_idx)
+                name_display = render_player_flame(name_str, table_id="detail", is_top=is_top)
+            elif idx == d_yeh_idx:
+                is_top = (d_yeh_idx < d_chen_idx)
+                name_display = render_player_ice(name_str, table_id="detail", is_top=is_top)
+            elif "俊丞" in name_str:
+                name_display = render_player_flame(name_str)
+            elif "臨恩" in name_str:
+                name_display = render_player_ice(name_str)
+            else:
+                name_display = name_str
         else:
-            name_display = name_str
+            if "俊丞" in name_str:
+                name_display = render_player_flame(name_str)
+            elif "臨恩" in name_str:
+                name_display = render_player_ice(name_str)
+            else:
+                name_display = name_str
 
         detail_html += f'<tr><td>{row["店家"]}</td><td>{name_display}</td><td>{row["餐點"]}</td><td>${row["金額"]}</td><td>{row["備註"]}</td></tr>'
     detail_html += '</tbody></table>'
