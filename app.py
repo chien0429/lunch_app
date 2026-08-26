@@ -346,7 +346,7 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
     </style>
     """
 
-# 注入常態與粒子特效（對撞模式下關閉原點獨立閃爍）
+# 注入常態、粒子與邊牧特效
 st.markdown("""
 <style>
 /* ================== 1. 陳俊丞：流動烈焰 + 升騰火星 ================== */
@@ -461,6 +461,48 @@ st.markdown("""
     animation: snowDrift2 2.3s infinite ease-in-out 0.5s;
 }
 
+/* ================== 3. 顏寶容：邊境牧羊犬（邊牧）萌寵特效 ================== */
+@keyframes collieBob {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(-3px) rotate(-4deg); }
+    75% { transform: translateY(-2px) rotate(4deg); }
+}
+@keyframes pawFloat {
+    0%   { opacity: 0; transform: translate(0, 0) scale(0.5); }
+    40%  { opacity: 0.9; transform: translate(6px, -10px) scale(1); }
+    100% { opacity: 0; transform: translate(12px, -22px) scale(0.3); }
+}
+@keyframes collieTextFlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.collie-name-wrapper {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    background: linear-gradient(90deg, #1b4332, #2d6a4f, #52b788, #74c69d, #1b4332);
+    background-size: 250% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: collieTextFlow 3.0s infinite linear;
+}
+.collie-icon-box {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 5px;
+    animation: collieBob 1.6s infinite ease-in-out;
+}
+.collie-paw {
+    display: inline-block;
+    font-size: 13px;
+    margin-left: 2px;
+    animation: pawFloat 1.8s infinite ease-out;
+}
+
 /* ================== 表格整體風格 ================== */
 .custom-table {
     width: 100%;
@@ -493,7 +535,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# 渲染角色名牌（僅在上方選手綁定中心碰撞點唯一的爆炸核，下方選手絕對不掛載爆炸）
+# 渲染角色名牌（俊丞、臨恩、寶容）
 def render_player_flame(name_str, table_id="", is_top=None):
     if is_top is None:
         return f'<span class="flame-name-wrapper">{name_str}<span class="flame-spark-1"></span><span class="flame-spark-2"></span></span>'
@@ -507,6 +549,25 @@ def render_player_ice(name_str, table_id="", is_top=None):
     if is_top:
         return f'<span class="smash-top-{table_id}"><span class="ice-name-wrapper">{name_str}<span class="ice-crystal-1"></span><span class="ice-crystal-2"></span></span><span class="explosion-core-{table_id}"></span></span>'
     return f'<span class="smash-bottom-{table_id}"><span class="ice-name-wrapper">{name_str}<span class="ice-crystal-1"></span><span class="ice-crystal-2"></span></span></span>'
+
+def render_player_collie(name_str):
+    collie_svg = """<svg viewBox="0 0 64 64" width="22" height="22" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="32" cy="34" rx="22" ry="20" fill="#2d3436"/>
+        <path d="M14 24 C10 10 20 8 24 16" fill="#2d3436"/>
+        <path d="M50 24 C54 10 44 8 40 16" fill="#2d3436"/>
+        <path d="M16 22 C13 13 19 11 22 17" fill="#ffffff"/>
+        <path d="M48 22 C51 13 45 11 42 17" fill="#ffffff"/>
+        <ellipse cx="32" cy="42" rx="14" ry="10" fill="#ffffff"/>
+        <path d="M27 18 Q32 25 37 18 L35 46 Q32 50 29 46 Z" fill="#ffffff"/>
+        <circle cx="24" cy="32" r="3" fill="#5c3d2e"/>
+        <circle cx="40" cy="32" r="3" fill="#5c3d2e"/>
+        <circle cx="25" cy="31" r="1" fill="#ffffff"/>
+        <circle cx="41" cy="31" r="1" fill="#ffffff"/>
+        <ellipse cx="32" cy="39" rx="3.5" ry="2.5" fill="#1e272e"/>
+        <path d="M30 42 Q32 44 34 42" stroke="#1e272e" stroke-width="1.5" stroke-linecap="round"/>
+        <ellipse cx="32" cy="45" rx="2" ry="2.5" fill="#ff7675"/>
+    </svg>"""
+    return f'<span class="collie-name-wrapper">{name_str}<span class="collie-icon-box">{collie_svg}</span><span class="collie-paw">🐾</span></span>'
 
 # --- 點餐區 ---
 st.subheader("📝 我要點餐")
@@ -610,6 +671,8 @@ if not orders_df.empty:
                 name_display = render_player_ice(name_str, table_id="person", is_top=is_top)
             else:
                 name_display = render_player_ice(name_str)
+        elif "顏寶容" in name_str or "寶容" in name_str:
+            name_display = render_player_collie(name_str)
         else:
             name_display = name_str
         
@@ -642,6 +705,8 @@ if not orders_df.empty:
                 name_display = render_player_flame(name_str)
             elif "臨恩" in name_str:
                 name_display = render_player_ice(name_str)
+            elif "顏寶容" in name_str or "寶容" in name_str:
+                name_display = render_player_collie(name_str)
             else:
                 name_display = name_str
         else:
@@ -649,6 +714,8 @@ if not orders_df.empty:
                 name_display = render_player_flame(name_str)
             elif "臨恩" in name_str:
                 name_display = render_player_ice(name_str)
+            elif "顏寶容" in name_str or "寶容" in name_str:
+                name_display = render_player_collie(name_str)
             else:
                 name_display = name_str
 
