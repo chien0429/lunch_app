@@ -9,7 +9,7 @@ st.caption(f"點餐日期：{date.today().strftime('%Y-%m-%d')}")
 
 # 共用資料儲存檔案
 DATA_FILE = "orders_data.csv"
-ADMIN_PASSWORD = "0000"
+ADMIN_PASSWORD = "1120"
 
 # 讀取共用訂單資料
 def load_orders():
