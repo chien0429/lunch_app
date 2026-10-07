@@ -32,6 +32,7 @@ MEMBERS = [
     "謝文玲", "李雨柔", "皮爵赫", "陳柏伸", "黃志成", "陳柏邑", "盧廷謙", "王宗瑜",
     "李佳航", "楊書維", "張瀚允", "陳柏豪", "曾柏豪", "周秀苓", "許皓翔", "胡煥然",
     "陳永河", "秦昇瑜", "張駿謙", "王慧珍", "黃浚宏", "怡君", "fish",
+    "劉紹翔", "洪成祥", "柯柏村",
     # --- BIM 團隊同仁 ---
     "林詩珊", "謝淳淇", "歐柏鋒", "林慧語", "吳詩田",
     # --- 彈性輸入 ---
@@ -78,6 +79,16 @@ def build_ayao_menu():
 
 # 多店家完整菜單資料庫
 RESTAURANT_MENUS = {
+    "吃蔬肥吧": {
+        "玫瑰鹽舒肥雞胸": 130, "柚香椒鹽舒肥雞胸": 130, "蒜香胡椒舒肥雞胸": 130, "南洋咖哩舒肥雞胸": 130,
+        "台式蔥油舒肥雞胸(限量/不含三星蔥)": 135, "香菜辣味舒肥雞胸(限量/含香菜)": 140,
+        "韓式泡菜豬(辣度不可調整)": 140, "檸檬椒鹽豬": 130, "蒜泥豬肉": 135, "加購：豬肉加肉量": 50,
+        "鹽漬烤鮭魚": 170, "照燒烤鮭魚": 170,
+        "玫瑰鹽雞胸肉(單點)": 60, "柚香椒鹽雞胸肉(單點)": 60, "蒜香胡椒雞胸肉(單點)": 60, "南洋咖哩雞胸肉(單點)": 60,
+        "水煮蛋": 15, "藜麥胚芽飯": 15, "照燒/鹽漬烤鮭魚(單點)": 105,
+        "今天不吃肉(五辛素)": 70,
+        "醬料：和風柚子醬": 0, "醬料：泰式甜辣醬": 0, "醬料：蜂蜜芥末醬": 0, "醬料：日式胡麻醬": 5, "加購單點蔬菜醬料": 5
+    },
     "阿姚麵館": build_ayao_menu(),
     "春福家": {
         "爌肉便當": 90, "爌肉(單點)": 50,
@@ -136,7 +147,7 @@ RESTAURANT_MENUS = {
         "炸豬排炒飯": 100, "炸雞排炒飯": 100, "椒鹽雞丁炒飯": 100, "炸蝦排炒飯": 100,
         "炸雞腿炒飯": 100, "起司豬排炒飯": 100, "秘製燒肉炒飯": 100, "黃金大腿炒飯": 120,
         "炸豬排飯": 100, "炸雞排飯": 100, "炸蝦排飯": 100, "炸雞腿飯": 100,
-        "打拋豬飯": 100, "椒鹽雞丁飯": 100, "泡菜燒肉飯": 100, "香煎鯖魚飯": 100,
+        "打拋豬飯": 100, "椒鹽雞丁飯": 100, "泡菜燒肉飯": 100, "香煎鯖 মাতৃ鯖魚飯": 100,
         "限量爌肉飯": 100, "秘製燒肉飯": 100, "起司豬排飯": 100, "咖哩豬排飯": 110,
         "咖哩雞排飯": 110, "黃金大腿飯": 120, "韭菜手工大水餃(10顆)": 100,
         "玉米手工大水餃(10顆)": 100, "高麗菜手工大水餃(10顆)": 100,
@@ -208,11 +219,11 @@ RESTAURANT_MENUS = {
         "蛤蜊冬粉": 80, "古早味紅茶": 25, "甘泉冬瓜露": 25,
     },
     "甲一飯包": {
-        "香腸飯": 85, "原味咔啦雞飯": 85, "辣味咔啦雞飯": 85, "招牌飯": 90,
-        "滷棒腿飯": 90, "薄鹽鯖魚飯": 90, "叉燒飯": 95, "養生飯": 95,
-        "蒲燒魚飯": 95, "鐵路排骨飯": 95, "炸排骨飯": 95, "爌肉飯": 100,
-        "法式豬排飯": 100, "菲力豬排飯": 105, "塔香無骨雞排飯": 105, "香雞排飯": 110,
-        "黑胡椒牛柳飯": 110, "和風烤雞飯": 115, "炸雞腿飯": 120, "挪威鯖魚飯": 130,
+        "香腸飯": 95, "原味咔啦雞飯": 95, "辣味咔啦雞飯": 95, "招牌飯": 100,
+        "滷棒腿飯": 100, "薄鹽鯖魚飯": 100, "叉燒飯": 105, "養生飯": 105,
+        "蒲燒魚飯": 105, "鐵路排骨飯": 105, "炸排骨飯": 105, "爌肉飯": 110,
+        "法式豬排飯": 110, "菲力豬排飯": 115, "塔香無骨雞排飯": 115, "香雞排飯": 120,
+        "黑胡椒牛柳飯": 120, "和風烤雞飯": 125, "炸雞腿飯": 130, "挪威鯖魚飯": 140,
     },
     "貓丼": {
         "雙蛋丼飯": 110, "豬肉蛋丼飯": 140, "牛肉蛋丼飯": 150, "炸豬排蛋丼飯": 170,
@@ -601,210 +612,3 @@ def render_player_collie(name_str):
         <circle cx="24" cy="32" r="3" fill="#5c3d2e"/>
         <circle cx="40" cy="32" r="3" fill="#5c3d2e"/>
         <circle cx="25" cy="31" r="1" fill="#ffffff"/>
-        <circle cx="41" cy="31" r="1" fill="#ffffff"/>
-        <ellipse cx="32" cy="39" rx="3.5" ry="2.5" fill="#1e272e"/>
-        <path d="M30 42 Q32 44 34 42" stroke="#1e272e" stroke-width="1.5" stroke-linecap="round"/>
-        <ellipse cx="32" cy="45" rx="2" ry="2.5" fill="#ff7675"/>
-    </svg>"""
-    return f'<span class="collie-name-wrapper">{name_str}<span class="collie-icon-box">{collie_svg}</span><span class="collie-paw">🐾</span></span>'
-
-# --- 點餐區 ---
-st.subheader("📝 我要點餐")
-
-selected_restaurant = st.selectbox("選擇今日訂購店家", list(RESTAURANT_MENUS.keys()))
-current_menu = RESTAURANT_MENUS[selected_restaurant]
-
-# 名字選擇
-selected_member = st.selectbox("選擇點餐人員", MEMBERS)
-
-with st.form(key="order_form", clear_on_submit=True):
-    custom_name = ""
-    if selected_member == "其他 / 手動輸入":
-        custom_name = st.text_input("請輸入你的名字 / 暱稱", placeholder="例如：新同仁")
-    
-    selected_items = st.multiselect(
-        "選擇餐點品項（可多選）", 
-        list(current_menu.keys()),
-        format_func=lambda x: f"{x} (${current_menu[x]} 元)"
-    )
-    
-    notes = st.text_input("備註（可留空）", placeholder="例如：微糖微冰、飯少、炒飯加辣等")
-    submit_button = st.form_submit_button(label="🚀 送出訂單")
-
-    if submit_button:
-        final_name = custom_name.strip() if selected_member == "其他 / 手動輸入" else selected_member
-        
-        if not final_name:
-            st.error("請填寫名字後再送出！")
-        elif not selected_items:
-            st.error("請至少選擇一項餐點！")
-        else:
-            current_df = load_orders()
-            
-            new_rows = []
-            for item in selected_items:
-                price = current_menu[item]
-                new_rows.append({
-                    "店家": selected_restaurant,
-                    "姓名": final_name,
-                    "餐點": item,
-                    "金額": price,
-                    "備註": notes.strip() if notes.strip() else "無"
-                })
-            
-            updated_df = pd.concat([current_df, pd.DataFrame(new_rows)], ignore_index=True)
-            save_orders(updated_df)
-            
-            user_total = sum(current_menu[item] for item in selected_items)
-            st.success(f"已記錄 {final_name} 的訂單！共 {len(selected_items)} 樣，個人小計：${user_total} 元")
-            st.rerun()
-
-# --- 統計與明細區 ---
-st.divider()
-st.subheader("📊 目前點餐狀況與統計")
-
-orders_df = load_orders()
-
-if not orders_df.empty:
-    has_chen = any("俊丞" in str(name) for name in orders_df["姓名"])
-    has_yeh = any("臨恩" in str(name) for name in orders_df["姓名"])
-    is_clashing = has_chen and has_yeh
-
-    total_qty = len(orders_df)
-    total_amount = orders_df["金額"].sum()
-    col1, col2 = st.columns(2)
-    col1.metric("總訂購件數", f"{total_qty} 份")
-    col2.metric("總應收金額", f"${total_amount} 元")
-
-    # 1. 店家點餐彙整
-    st.markdown("**【店家點餐彙整】**")
-    summary_df = orders_df.groupby(["店家", "餐點"]).size().reset_index(name="數量")
-    st.table(summary_df)
-
-    # 2. 依人名統計每人應付金額
-    st.markdown("**【每人應收金額】**")
-    person_df = orders_df.groupby("姓名")["金額"].sum().reset_index(name="應付金額")
-
-    # 計算人名表格中的行距與碰撞
-    p_names = person_df["姓名"].tolist()
-    p_chen_idx = next((i for i, n in enumerate(p_names) if "俊丞" in str(n)), None)
-    p_yeh_idx = next((i for i, n in enumerate(p_names) if "臨恩" in str(n)), None)
-
-    if is_clashing and p_chen_idx is not None and p_yeh_idx is not None:
-        top_idx_p = min(p_chen_idx, p_yeh_idx)
-        btm_idx_p = max(p_chen_idx, p_yeh_idx)
-        st.markdown(generate_dynamic_clash_css("person", top_idx_p, btm_idx_p, row_height=48), unsafe_allow_html=True)
-
-    person_html = '<table class="custom-table"><thead><tr><th>姓名</th><th>應付金額</th></tr></thead><tbody>'
-    for idx, row in person_df.iterrows():
-        name_str = str(row["姓名"])
-        if "俊丞" in name_str:
-            if is_clashing and p_chen_idx is not None and p_yeh_idx is not None:
-                is_top = (p_chen_idx < p_yeh_idx)
-                name_display = render_player_flame(name_str, table_id="person", is_top=is_top)
-            else:
-                name_display = render_player_flame(name_str)
-        elif "臨恩" in name_str:
-            if is_clashing and p_chen_idx is not None and p_yeh_idx is not None:
-                is_top = (p_yeh_idx < p_chen_idx)
-                name_display = render_player_ice(name_str, table_id="person", is_top=is_top)
-            else:
-                name_display = render_player_ice(name_str)
-        elif "顏寶容" in name_str or "寶容" in name_str:
-            name_display = render_player_collie(name_str)
-        else:
-            name_display = name_str
-        
-        person_html += f'<tr><td>{name_display}</td><td>${row["應付金額"]} 元</td></tr>'
-    person_html += '</tbody></table>'
-    st.markdown(person_html, unsafe_allow_html=True)
-
-    # 3. 詳細點餐名冊
-    st.markdown("**【詳細點餐名冊】**")
-    d_names = orders_df["姓名"].tolist()
-    d_chen_idx = next((i for i, n in enumerate(d_names) if "俊丞" in str(n)), None)
-    d_yeh_idx = next((i for i, n in enumerate(d_names) if "臨恩" in str(n)), None)
-
-    if is_clashing and d_chen_idx is not None and d_yeh_idx is not None:
-        top_idx_d = min(d_chen_idx, d_yeh_idx)
-        btm_idx_d = max(d_chen_idx, d_yeh_idx)
-        st.markdown(generate_dynamic_clash_css("detail", top_idx_d, btm_idx_d, row_height=48), unsafe_allow_html=True)
-
-    detail_html = '<table class="custom-table"><thead><tr><th>店家</th><th>姓名</th><th>餐點</th><th>金額</th><th>備註</th></tr></thead><tbody>'
-    for idx, row in orders_df.iterrows():
-        name_str = str(row["姓名"])
-        if is_clashing and d_chen_idx is not None and d_yeh_idx is not None:
-            if idx == d_chen_idx:
-                is_top = (d_chen_idx < d_yeh_idx)
-                name_display = render_player_flame(name_str, table_id="detail", is_top=is_top)
-            elif idx == d_yeh_idx:
-                is_top = (d_yeh_idx < d_chen_idx)
-                name_display = render_player_ice(name_str, table_id="detail", is_top=is_top)
-            elif "俊丞" in name_str:
-                name_display = render_player_flame(name_str)
-            elif "臨恩" in name_str:
-                name_display = render_player_ice(name_str)
-            elif "顏寶容" in name_str or "寶容" in name_str:
-                name_display = render_player_collie(name_str)
-            else:
-                name_display = name_str
-        else:
-            if "俊丞" in name_str:
-                name_display = render_player_flame(name_str)
-            elif "臨恩" in name_str:
-                name_display = render_player_ice(name_str)
-            elif "顏寶容" in name_str or "寶容" in name_str:
-                name_display = render_player_collie(name_str)
-            else:
-                name_display = name_str
-
-        detail_html += f'<tr><td>{row["店家"]}</td><td>{name_display}</td><td>{row["餐點"]}</td><td>${row["金額"]}</td><td>{row["備註"]}</td></tr>'
-    detail_html += '</tbody></table>'
-    st.markdown(detail_html, unsafe_allow_html=True)
-
-    # --- 刪除特定訂單功能（含密碼保護） ---
-    with st.expander("🛠️ 訂單修改 / 刪除管理（需管理密碼）"):
-        st.write("若點錯餐點，可在此選取並單筆刪除：")
-        
-        order_options = [
-            f"編號 {idx + 1}: 【{row['姓名']}】 {row['餐點']} (${row['金額']}元) - 備註: {row['備註']}"
-            for idx, row in orders_df.iterrows()
-        ]
-        
-        selected_order_to_delete = st.selectbox("選擇要刪除的訂單項目", order_options)
-        del_pwd = st.text_input("輸入管理密碼以確認刪除", type="password", placeholder="請輸入4位數密碼")
-        
-        if st.button("❌ 確認刪除此筆餐點"):
-            if del_pwd == ADMIN_PASSWORD:
-                selected_idx = order_options.index(selected_order_to_delete)
-                updated_df = orders_df.drop(index=selected_idx).reset_index(drop=True)
-                save_orders(updated_df)
-                st.success("該筆訂單已成功刪除！")
-                st.rerun()
-            else:
-                st.error("密碼錯誤，無法刪除！")
-
-    st.write("")
-    col_btn1, col_btn2 = st.columns(2)
-    with col_btn1:
-        csv_data = orders_df.to_csv(index=False).encode('utf-8-sig')
-        st.download_button(
-            label="📥 下載今日訂單報表 (CSV)",
-            data=csv_data,
-            file_name=f"午餐訂單_{date.today().strftime('%Y%m%d')}.csv",
-            mime="text/csv"
-        )
-    with col_btn2:
-        with st.popover("🗑️ 清空所有訂單（重新開團）"):
-            st.write("⚠️ 此動作會清空今日所有點餐資料！")
-            clear_pwd = st.text_input("請輸入管理密碼確認清空", type="password", key="clear_all_pwd")
-            if st.button("確認全數清空"):
-                if clear_pwd == ADMIN_PASSWORD:
-                    if os.path.exists(DATA_FILE):
-                        os.remove(DATA_FILE)
-                    st.success("已清空所有訂單！")
-                    st.rerun()
-                else:
-                    st.error("密碼錯誤！")
-else:
-    st.info("目前還沒有任何人點餐，快當第一個！")
