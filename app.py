@@ -89,6 +89,21 @@ RESTAURANT_MENUS = {
         "今天不吃肉(五辛素)": 70,
         "醬料：和風柚子醬": 0, "醬料：泰式甜辣醬": 0, "醬料：蜂蜜芥末醬": 0, "醬料：日式胡麻醬": 5, "加購單點蔬菜醬料": 5
     },
+    "春宅": {
+        "朝日大麥(M)": 25, "朝日大麥(L)": 30, "焙火大麥(M)": 25, "焙火大麥(L)": 30,
+        "晨露綠茶(M)": 25, "晨露綠茶(L)": 30, "妍果紅茶(M)": 30, "妍果紅茶(L)": 35,
+        "四季春茶(M)": 30, "四季春茶(L)": 35, "金萱烏龍(M)": 30, "金萱烏龍(L)": 35, "赤韻烏龍(M)": 30, "赤韻烏龍(L)": 35,
+        "冬瓜檸檬(L)": 50, "茶凍檸檬青(M)": 55, "茶凍檸檬青(L)": 60, "堤亞青檸(L)": 60,
+        "黃金柳橙綠(M)": 55, "黃金柳橙綠(L)": 65, "桂花紅柚烏龍(L)": 65, "蘋果四季春(L)": 65,
+        "葡萄輕茉綠(M)": 65, "葡萄輕茉綠(L)": 70,
+        "朝日大麥那堤(M)": 55, "朝日大麥那堤(L)": 65, "紅茶那堤(M)": 55, "紅茶那堤(L)": 65,
+        "烏龍那堤(M)": 55, "烏龍那堤(L)": 65, "白玉茶凍烏龍那堤(M)": 65, "白玉茶凍烏龍那堤(L)": 70,
+        "春宅奶茶(M)": 45, "春宅奶茶(L)": 50, "白玉珍珠奶茶(M)": 50, "白玉珍珠奶茶(L)": 55,
+        "朝日大麥凍奶(M)": 55, "朝日大麥凍奶(L)": 60, "大麥凍金萱奶(M)": 55, "大麥凍金萱奶(L)": 60,
+        "芝士朝日大麥(冰量固定L)": 60, "芝士金萱烏龍(冰量固定L)": 60, "芝士妍果紅茶(冰量固定L)": 60, "芝士可可奶霜(冰量固定L)": 65,
+        "玉露冬瓜茶(L)": 35, "水里梅子綠(L)": 55, "茶凍桂花蜜烏龍(L)": 60, "茶凍荔枝春茶(L)": 60,
+        "加料: 朝日大麥凍": 10, "加料: 烏龍粉粿": 10, "加料: 白玉珍珠": 10, "加料: 翡翠茶凍": 10
+    },
     "阿姚麵館": build_ayao_menu(),
     "春福家": {
         "爌肉便當": 90, "爌肉(單點)": 50,
@@ -147,7 +162,7 @@ RESTAURANT_MENUS = {
         "炸豬排炒飯": 100, "炸雞排炒飯": 100, "椒鹽雞丁炒飯": 100, "炸蝦排炒飯": 100,
         "炸雞腿炒飯": 100, "起司豬排炒飯": 100, "秘製燒肉炒飯": 100, "黃金大腿炒飯": 120,
         "炸豬排飯": 100, "炸雞排飯": 100, "炸蝦排飯": 100, "炸雞腿飯": 100,
-        "打拋豬飯": 100, "椒鹽雞丁飯": 100, "泡菜燒肉飯": 100, "香煎鯖 মাতৃ鯖魚飯": 100,
+        "打拋豬飯": 100, "椒鹽雞丁飯": 100, "泡菜燒肉飯": 100, "香煎鯖魚飯": 100,
         "限量爌肉飯": 100, "秘製燒肉飯": 100, "起司豬排飯": 100, "咖哩豬排飯": 110,
         "咖哩雞排飯": 110, "黃金大腿飯": 120, "韭菜手工大水餃(10顆)": 100,
         "玉米手工大水餃(10顆)": 100, "高麗菜手工大水餃(10顆)": 100,
@@ -601,22 +616,8 @@ def render_player_ice(name_str, table_id="", is_top=None):
     return f'<span class="smash-bottom-{table_id}"><span class="ice-name-wrapper">{name_str}<span class="ice-crystal-1"></span><span class="ice-crystal-2"></span></span></span>'
 
 def render_player_collie(name_str):
-    collie_svg = """<svg viewBox="0 0 64 64" width="22" height="22" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <ellipse cx="32" cy="34" rx="22" ry="20" fill="#2d3436"/>
-        <path d="M14 24 C10 10 20 8 24 16" fill="#2d3436"/>
-        <path d="M50 24 C54 10 44 8 40 16" fill="#2d3436"/>
-        <path d="M16 22 C13 13 19 11 22 17" fill="#ffffff"/>
-        <path d="M48 22 C51 13 45 11 42 17" fill="#ffffff"/>
-        <ellipse cx="32" cy="42" rx="14" ry="10" fill="#ffffff"/>
-        <path d="M27 18 Q32 25 37 18 L35 46 Q32 50 29 46 Z" fill="#ffffff"/>
-        <circle cx="24" cy="32" r="3" fill="#5c3d2e"/>
-        <circle cx="40" cy="32" r="3" fill="#5c3d2e"/>
-        <circle cx="25" cy="31" r="1" fill="#ffffff"/>
-        <circle cx="41" cy="31" r="1" fill="#ffffff"/>
-        <ellipse cx="32" cy="39" rx="3.5" ry="2.5" fill="#1e272e"/>
-        <path d="M30 42 Q32 44 34 42" stroke="#1e272e" stroke-width="1.5" stroke-linecap="round"/>
-        <ellipse cx="32" cy="45" rx="2" ry="2.5" fill="#ff7675"/>
-    </svg>"""
+    # 使用單行字串取代三引號，避免複製時被截斷導致 SyntaxError
+    collie_svg = '<svg viewBox="0 0 64 64" width="22" height="22" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="32" cy="34" rx="22" ry="20" fill="#2d3436"/><path d="M14 24 C10 10 20 8 24 16" fill="#2d3436"/><path d="M50 24 C54 10 44 8 40 16" fill="#2d3436"/><path d="M16 22 C13 13 19 11 22 17" fill="#ffffff"/><path d="M48 22 C51 13 45 11 42 17" fill="#ffffff"/><ellipse cx="32" cy="42" rx="14" ry="10" fill="#ffffff"/><path d="M27 18 Q32 25 37 18 L35 46 Q32 50 29 46 Z" fill="#ffffff"/><circle cx="24" cy="32" r="3" fill="#5c3d2e"/><circle cx="40" cy="32" r="3" fill="#5c3d2e"/><circle cx="25" cy="31" r="1" fill="#ffffff"/><circle cx="41" cy="31" r="1" fill="#ffffff"/><ellipse cx="32" cy="39" rx="3.5" ry="2.5" fill="#1e272e"/><path d="M30 42 Q32 44 34 42" stroke="#1e272e" stroke-width="1.5" stroke-linecap="round"/><ellipse cx="32" cy="45" rx="2" ry="2.5" fill="#ff7675"/></svg>'
     return f'<span class="collie-name-wrapper">{name_str}<span class="collie-icon-box">{collie_svg}</span><span class="collie-paw">🐾</span></span>'
 
 # --- 點餐區 ---
