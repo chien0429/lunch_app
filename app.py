@@ -547,46 +547,102 @@ st.markdown("""
     animation: snowDrift2 2.3s infinite ease-in-out 0.5s;
 }
 
-/* ================== 3. 顏寶容：邊境牧羊犬（邊牧）萌寵特效 ================== */
-@keyframes collieBob {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    25% { transform: translateY(-3px) rotate(-4deg); }
-    75% { transform: translateY(-2px) rotate(4deg); }
-}
-@keyframes pawFloat {
-    0%   { opacity: 0; transform: translate(0, 0) scale(0.5); }
-    40%  { opacity: 0.9; transform: translate(6px, -10px) scale(1); }
-    100% { opacity: 0; transform: translate(12px, -22px) scale(0.3); }
-}
-@keyframes collieTextFlow {
-    0% { background-position: 0% 50%; }
+/* ================== 3. 顏寶容：霓虹極光哈士奇 ================== */
+@keyframes huskyAurora {
+    0%, 100% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
 }
-
-.collie-name-wrapper {
+@keyframes huskyHover {
+    0%, 100% { transform: translateY(0) rotate(-5deg); }
+    50% { transform: translateY(-3px) rotate(5deg); }
+}
+@keyframes huskyOrbit {
+    to { transform: rotate(360deg); }
+}
+@keyframes huskyEyePulse {
+    0%, 100% { opacity: .7; }
+    50% { opacity: 1; }
+}
+@keyframes huskyEnergy {
+    0% { opacity: 0; transform: translate(0, 8px) scale(.3) rotate(0deg); }
+    35% { opacity: .9; }
+    100% { opacity: 0; transform: translate(8px, -20px) scale(1) rotate(120deg); }
+}
+.husky-name-wrapper {
     display: inline-flex;
     align-items: center;
+    gap: 8px;
     position: relative;
+    vertical-align: middle;
+    isolation: isolate;
+    white-space: nowrap;
+}
+.husky-name-text {
     font-weight: 900;
     letter-spacing: 1.5px;
-    background: linear-gradient(90deg, #1b4332, #2d6a4f, #52b788, #74c69d, #1b4332);
-    background-size: 250% auto;
+    background: linear-gradient(100deg, #087da7, #00c8ed, #6844da, #b83bbe, #087da7);
+    background-size: 300% auto;
     -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
     -webkit-text-fill-color: transparent;
-    animation: collieTextFlow 3.0s infinite linear;
+    filter: drop-shadow(0 0 3px rgba(0, 200, 237, .45));
+    animation: huskyAurora 3s ease-in-out infinite;
 }
-.collie-icon-box {
+.husky-icon-box {
     display: inline-flex;
     align-items: center;
-    margin-left: 5px;
-    animation: collieBob 1.6s infinite ease-in-out;
+    justify-content: center;
+    position: relative;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    line-height: 1;
+    animation: huskyHover 2.4s ease-in-out infinite;
 }
-.collie-paw {
-    display: inline-block;
-    font-size: 13px;
-    margin-left: 2px;
-    animation: pawFloat 1.8s infinite ease-out;
+.husky-icon-box::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 220, 255, .4);
+    border-top: 2px solid #00cfff;
+    border-bottom: 2px solid #b05cff;
+    box-shadow: 0 0 6px rgba(0, 207, 255, .45), inset 0 0 5px rgba(176, 92, 255, .2);
+    animation: huskyOrbit 3s linear infinite;
+    pointer-events: none;
+}
+.husky-face {
+    position: relative;
+    width: 32px;
+    height: 32px;
+    filter: drop-shadow(0 0 3px rgba(0, 207, 255, .6));
+}
+.husky-eyes {
+    animation: huskyEyePulse 2.4s ease-in-out infinite;
+}
+.husky-energy {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    border-radius: 1px;
+    background: #00ceef;
+    box-shadow: 0 0 5px #00ceef;
+    right: -4px;
+    top: 20px;
+    animation: huskyEnergy 2.6s ease-out infinite;
+    pointer-events: none;
+}
+.husky-energy-purple {
+    background: #ad61ff;
+    box-shadow: 0 0 5px #ad61ff;
+    right: 6px;
+    animation-delay: 1.3s;
+}
+@media (prefers-reduced-motion: reduce) {
+    .husky-name-text, .husky-icon-box, .husky-icon-box::before,
+    .husky-eyes, .husky-energy { animation: none; }
+    .husky-energy { display: none; }
 }
 
 /* ================== 表格整體風格 ================== */
@@ -637,9 +693,36 @@ def render_player_ice(name_str, table_id="", is_top=None):
     return f'<span class="smash-bottom-{table_id}"><span class="ice-name-wrapper">{name_str}<span class="ice-crystal-1"></span><span class="ice-crystal-2"></span></span></span>'
 
 def render_player_collie(name_str):
-    # 使用單行字串取代三引號，避免複製時被截斷導致 SyntaxError
-    collie_svg = '<svg viewBox="0 0 64 64" width="22" height="22" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="32" cy="34" rx="22" ry="20" fill="#2d3436"/><path d="M14 24 C10 10 20 8 24 16" fill="#2d3436"/><path d="M50 24 C54 10 44 8 40 16" fill="#2d3436"/><path d="M16 22 C13 13 19 11 22 17" fill="#ffffff"/><path d="M48 22 C51 13 45 11 42 17" fill="#ffffff"/><ellipse cx="32" cy="42" rx="14" ry="10" fill="#ffffff"/><path d="M27 18 Q32 25 37 18 L35 46 Q32 50 29 46 Z" fill="#ffffff"/><circle cx="24" cy="32" r="3" fill="#5c3d2e"/><circle cx="40" cy="32" r="3" fill="#5c3d2e"/><circle cx="25" cy="31" r="1" fill="#ffffff"/><circle cx="41" cy="31" r="1" fill="#ffffff"/><ellipse cx="32" cy="39" rx="3.5" ry="2.5" fill="#1e272e"/><path d="M30 42 Q32 44 34 42" stroke="#1e272e" stroke-width="1.5" stroke-linecap="round"/><ellipse cx="32" cy="45" rx="2" ry="2.5" fill="#ff7675"/></svg>'
-    return f'<span class="collie-name-wrapper">{name_str}<span class="collie-icon-box">{collie_svg}</span><span class="collie-paw">🐾</span></span>'
+    # 保留原函式名稱，讓所有名冊直接套用新的哈士奇特效。
+    from html import escape
+    husky_svg = (
+        '<svg class="husky-face" viewBox="0 0 64 64" width="32" height="32" '
+        'fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="霓虹哈士奇">'
+        '<path d="M12 28 L9 5 Q20 6 26 18 L38 18 Q44 6 55 5 L52 28 '
+        'Q58 42 47 53 Q32 65 17 53 Q6 42 12 28Z" fill="#182d48" stroke="#55dfff" stroke-width="1.5"/>'
+        '<path d="M14 22 L13 11 L23 21Z M41 21 L51 11 L50 22Z" fill="#a491cf"/>'
+        '<path d="M12 31 Q17 25 25 29 L29 37 L32 20 L35 37 L39 29 Q47 25 52 31 '
+        'L49 44 Q45 56 32 58 Q19 56 15 44Z" fill="#edf7ff"/>'
+        '<path d="M14 30 Q20 25 27 30 L25 38 L17 38Z '
+        'M37 30 Q44 25 50 30 L47 38 L39 38Z" fill="#253c5a"/>'
+        '<g class="husky-eyes">'
+        '<path d="M17 32 Q21 30 26 32 Q23 37 19 35Z '
+        'M38 32 Q43 30 47 32 Q45 36 41 35Z" fill="#00dfff" stroke="#8ff4ff" stroke-width="1"/>'
+        '<path d="M22 32 L22 35 M42 32 L42 35" stroke="#112338" stroke-width="1.7"/>'
+        '</g>'
+        '<path d="M27 42 Q32 39 37 42 L34 46 L30 46Z" fill="#122039"/>'
+        '<path d="M32 46 L32 49 M25 49 Q28 53 32 49 Q36 53 39 49" '
+        'stroke="#233a53" stroke-width="1.5" stroke-linecap="round"/>'
+        '<path d="M17 42 L22 43 M42 43 L47 42" stroke="#97d9ed" stroke-width="1.3"/>'
+        '</svg>'
+    )
+    return (
+        '<span class="husky-name-wrapper">'
+        f'<span class="husky-name-text">{escape(str(name_str))}</span>'
+        f'<span class="husky-icon-box">{husky_svg}'
+        '<span class="husky-energy"></span><span class="husky-energy husky-energy-purple"></span>'
+        '</span></span>'
+    )
 
 # --- 點餐區 ---
 st.subheader("📝 我要點餐")
