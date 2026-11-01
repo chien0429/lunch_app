@@ -2,13 +2,51 @@ import streamlit as st
 import pandas as pd
 from datetime import date
 import os
+import sqlite3
+from contextlib import closing
 
 st.set_page_config(page_title="今日午餐點餐系統", page_icon="🍱", layout="centered")
 st.title("🍱 今日午餐點餐小幫手")
 st.caption(f"點餐日期：{date.today().strftime('%Y-%m-%d')}")
 
+# 評分功能公告：每個瀏覽器連線工作階段自動顯示一次。
+RATING_NOTICE_KEY = "rating_notice_seen_v1"
+
+
+def rating_announcement_content():
+    st.markdown("### ⭐ 餐點匿名評分上線囉！")
+    st.write("吃過的餐點好不好吃？歡迎留下 1～5 分，讓大家下次點餐更有參考！")
+    st.markdown(
+        "- **不用填姓名，也不用寫評語**。\n"
+        "- 選擇店家，到下方「匿名餐點評分」選餐點並送出分數。\n"
+        "- 點餐選單會顯示每道餐點的**平均分數與評分筆數**。"
+    )
+    st.caption("請依實際用餐感受評分，謝謝大家！")
+    if st.button("知道了，開始點餐", key="dismiss_rating_notice", type="primary"):
+        st.session_state[RATING_NOTICE_KEY] = True
+        st.rerun()
+
+
+# 支援正式版與較早提供的 experimental_dialog。
+_dialog = getattr(st, "dialog", None) or getattr(st, "experimental_dialog", None)
+if _dialog is not None:
+    show_rating_announcement = _dialog("📣 點餐系統公告")(rating_announcement_content)
+else:
+    def show_rating_announcement():
+        with st.expander("📣 點餐系統公告", expanded=True):
+            rating_announcement_content()
+
+
+reopen_rating_notice = st.button("📣 查看評分功能公告", key="open_rating_notice")
+if not st.session_state.get(RATING_NOTICE_KEY, False) or reopen_rating_notice:
+    # 在開啟時標記，使用 X、ESC 或點擊視窗外關閉也不會反覆彈出。
+    st.session_state[RATING_NOTICE_KEY] = True
+    show_rating_announcement()
+
 # 共用資料儲存檔案
 DATA_FILE = "orders_data.csv"
+# 評分獨立保存，清空訂單時仍保留；不儲存姓名或評語。
+RATINGS_FILE = "ratings_data.sqlite3"
 ADMIN_PASSWORD = "1120"
 
 # 讀取共用訂單資料
@@ -23,6 +61,51 @@ def load_orders():
 # 儲存共用訂單資料
 def save_orders(df):
     df.to_csv(DATA_FILE, index=False, encoding='utf-8-sig')
+
+# 匿名餐點評分：只儲存店家、餐點、1～5 分。
+def initialize_ratings():
+    with closing(sqlite3.connect(RATINGS_FILE, timeout=10)) as conn:
+        with conn:
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS dish_ratings (
+                    restaurant TEXT NOT NULL,
+                    dish TEXT NOT NULL,
+                    score INTEGER NOT NULL CHECK (score BETWEEN 1 AND 5)
+                )
+            """)
+
+
+def load_rating_summary():
+    with closing(sqlite3.connect(RATINGS_FILE, timeout=10)) as conn:
+        rows = conn.execute("""
+            SELECT restaurant, dish, AVG(score), COUNT(*)
+            FROM dish_ratings
+            GROUP BY restaurant, dish
+        """).fetchall()
+    return {(restaurant, dish): (average, count)
+            for restaurant, dish, average, count in rows}
+
+
+def save_dish_rating(restaurant, dish, score):
+    if restaurant not in RESTAURANT_MENUS or dish not in RESTAURANT_MENUS[restaurant]:
+        raise ValueError("請選擇有效的店家與餐點。")
+    if type(score) is not int or not 1 <= score <= 5:
+        raise ValueError("請選擇 1～5 分。")
+    with closing(sqlite3.connect(RATINGS_FILE, timeout=10)) as conn:
+        with conn:
+            conn.execute(
+                "INSERT INTO dish_ratings (restaurant, dish, score) VALUES (?, ?, ?)",
+                (restaurant, dish, score)
+            )
+
+
+def dish_rating_text(summary, restaurant, dish):
+    result = summary.get((restaurant, dish))
+    if result is None:
+        return "尚無評分"
+    average, count = result
+    return f"⭐ {average:.1f}/5（{count} 筆評分）"
+
 
 # 常用同事名單
 MEMBERS = [
@@ -41,6 +124,40 @@ MEMBERS = [
 
 # 多店家完整菜單資料庫
 RESTAURANT_MENUS = {
+    '好日餐盒': {'家傳滷香菇雞腿': 140,
+     '香煎里肌豬排': 140,
+     '軟骨肉飯': 140,
+     '雞腿特餐（兩樣菜）': 100,
+     '健康菜飯': 90,
+     '香菇滷雞腿（單包冷凍／1支）': 65,
+     '香菇滷雞腿（單包冷凍／5支）': 300},
+    '貳貳來吃＆莊爸爸健康餐': {'酥炸雞腿': 120,
+     '香酥雞排': 115,
+     '甘梅雞排': 115,
+     '照燒雞排': 120,
+     '薑汁燒肉': 110,
+     '香檸豬排': 100,
+     '糖醋小排': 105,
+     '魚肉綜合': 105,
+     '宮保雞丁': 105,
+     '椒鹽雞丁': 100,
+     '炸豬排': 100,
+     '黑胡椒豬': 95,
+     '原味雞胸': 145,
+     '川味雞胸': 150,
+     '義式香料嫩雞胸': 145,
+     '泰式檸檬雞胸': 150,
+     '高蛋白塔塔雞胸': 150,
+     '香煎豬菲力': 195,
+     '水煮虱目魚柳': 140,
+     '香煎雞腿排': 195,
+     '鹽味鯖魚': 145,
+     '彈跳大蝦仁': 195,
+     '加購醬料：泰式醬': 15,
+     '加購醬料：胡麻醬': 15,
+     '加購醬料：塔塔醬': 10,
+     '加購醬料：青檸醬': 10,
+     '加購醬料：和風芥末醬': 10},
     "吃蔬肥吧": {
         "玫瑰鹽舒肥雞胸": 130, "柚香椒鹽舒肥雞胸": 130, "蒜香胡椒舒肥雞胸": 130, "南洋咖哩舒肥雞胸": 130,
         "台式蔥油舒肥雞胸(限量/不含三星蔥)": 135, "香菜辣味舒肥雞胸(限量/含香菜)": 140,
@@ -267,10 +384,10 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
         return ""
     diff = abs(btm_idx - top_idx)
     distance_px = int((diff * row_height) / 2)
-
+    
     return f"""
     <style>
-    /* 上方選手 */
+    /* 上方選手：0-15% 蓄力 -> 15-50% 全速加速衝刺(ease-in) -> 50% 碰觸最高速 -> 50-65% 震退彈回(ease-out) -> 75-100% 絕對靜止 */
     @keyframes smashDown_{table_id} {{
         0% {{
             transform: translateY(0px) scale(1);
@@ -282,13 +399,13 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
             filter: brightness(1.2);
             animation-timing-function: ease-in;
         }}
-        50% {{
-            transform: translateY({distance_px}px) scale(1.35) rotate(-3deg);
+        50% {{ 
+            transform: translateY({distance_px}px) scale(1.35) rotate(-3deg); 
             filter: brightness(2.8) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #ff3300);
             animation-timing-function: ease-out;
         }}
-        65% {{
-            transform: translateY({int(distance_px * 0.35)}px) scale(1.1) rotate(4deg);
+        65% {{ 
+            transform: translateY({int(distance_px * 0.35)}px) scale(1.1) rotate(4deg); 
             filter: brightness(1.3);
             animation-timing-function: ease-in-out;
         }}
@@ -296,13 +413,13 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
             transform: translateY(0px) scale(1);
             filter: brightness(1);
         }}
-        100% {{
-            transform: translateY(0px) scale(1);
-            filter: brightness(1);
+        100% {{ 
+            transform: translateY(0px) scale(1); 
+            filter: brightness(1); 
         }}
     }}
 
-    /* 下方選手 */
+    /* 下方選手：0-15% 蓄力 -> 15-50% 全速加速衝刺(ease-in) -> 50% 碰觸最高速 -> 50-65% 震退彈回(ease-out) -> 75-100% 絕對靜止 */
     @keyframes smashUp_{table_id} {{
         0% {{
             transform: translateY(0px) scale(1);
@@ -314,13 +431,13 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
             filter: brightness(1.2);
             animation-timing-function: ease-in;
         }}
-        50% {{
-            transform: translateY(-{distance_px}px) scale(1.35) rotate(3deg);
+        50% {{ 
+            transform: translateY(-{distance_px}px) scale(1.35) rotate(3deg); 
             filter: brightness(2.8) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #00e5ff);
             animation-timing-function: ease-out;
         }}
-        65% {{
-            transform: translateY(-{int(distance_px * 0.35)}px) scale(1.1) rotate(-4deg);
+        65% {{ 
+            transform: translateY(-{int(distance_px * 0.35)}px) scale(1.1) rotate(-4deg); 
             filter: brightness(1.3);
             animation-timing-function: ease-in-out;
         }}
@@ -328,35 +445,35 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
             transform: translateY(0px) scale(1);
             filter: brightness(1);
         }}
-        100% {{
-            transform: translateY(0px) scale(1);
-            filter: brightness(1);
+        100% {{ 
+            transform: translateY(0px) scale(1); 
+            filter: brightness(1); 
         }}
     }}
 
-    /* 中心大爆炸 */
+    /* 中心大爆炸：49% 隱形 -> 50% 撞擊瞬間零時差爆發 -> 56% 快速消散 -> 57-100% 絕對隱形 */
     @keyframes explosionSupernova_{table_id} {{
-        0%, 49% {{
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0.1) rotate(0deg);
+        0%, 49% {{ 
+            opacity: 0; 
+            transform: translate(-50%, -50%) scale(0.1) rotate(0deg); 
         }}
-        50% {{
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(3.8) rotate(45deg);
+        50% {{ 
+            opacity: 1; 
+            transform: translate(-50%, -50%) scale(3.8) rotate(45deg); 
             box-shadow: 0 0 35px #ffffff, 0 0 70px #ffea00, 0 0 100px #ff3300, 0 0 120px #00e5ff;
         }}
-        54% {{
-            opacity: 0.85;
-            transform: translate(-50%, -50%) scale(5.6) rotate(90deg);
+        54% {{ 
+            opacity: 0.85; 
+            transform: translate(-50%, -50%) scale(5.6) rotate(90deg); 
             box-shadow: 0 0 50px rgba(255,255,255,1), 0 0 90px rgba(255,69,0,0.8), 0 0 115px rgba(0,229,255,0.8);
         }}
-        56% {{
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(7.0) rotate(140deg);
+        56% {{ 
+            opacity: 0; 
+            transform: translate(-50%, -50%) scale(7.0) rotate(140deg); 
         }}
-        100% {{
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0.1);
+        100% {{ 
+            opacity: 0; 
+            transform: translate(-50%, -50%) scale(0.1); 
         }}
     }}
 
@@ -393,7 +510,7 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
     </style>
     """
 
-# 注入常態、粒子與哈士奇特效
+# 注入常態、粒子與邊牧特效
 st.markdown("""
 <style>
 /* ================== 1. 陳俊丞：流動烈焰 + 升騰火星 ================== */
@@ -656,7 +773,6 @@ def render_player_ice(name_str, table_id="", is_top=None):
 def render_player_collie(name_str):
     # 保留原函式名稱，讓所有名冊直接套用新的哈士奇特效。
     from html import escape
-
     husky_svg = (
         '<svg class="husky-face" viewBox="0 0 64 64" width="32" height="32" '
         'fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="霓虹哈士奇">'
@@ -692,6 +808,26 @@ st.subheader("📝 我要點餐")
 selected_restaurant = st.selectbox("選擇今日訂購店家", list(RESTAURANT_MENUS.keys()))
 current_menu = RESTAURANT_MENUS[selected_restaurant]
 
+try:
+    initialize_ratings()
+    rating_summary = load_rating_summary()
+    ratings_available = True
+except sqlite3.Error:
+    rating_summary = {}
+    ratings_available = False
+    st.warning("目前無法讀取評分，點餐功能仍可使用；請稍後再試評分。")
+
+if ratings_available:
+    with st.expander("⭐ 查看本店各餐點評分"):
+        st.table(pd.DataFrame([
+            {
+                "餐點": item,
+                "價格": price,
+                "評分": dish_rating_text(rating_summary, selected_restaurant, item)
+            }
+            for item, price in current_menu.items()
+        ]))
+
 # 名字選擇
 selected_member = st.selectbox("選擇點餐人員", MEMBERS)
 
@@ -699,26 +835,30 @@ with st.form(key="order_form", clear_on_submit=True):
     custom_name = ""
     if selected_member == "其他 / 手動輸入":
         custom_name = st.text_input("請輸入你的名字 / 暱稱", placeholder="例如：新同仁")
-
+    
     selected_items = st.multiselect(
-        "選擇餐點品項（可多選）",
+        "選擇餐點品項（可多選）", 
         list(current_menu.keys()),
-        format_func=lambda x: f"{x} (${current_menu[x]} 元)"
+        format_func=lambda x: (
+            f"{x} (${current_menu[x]} 元)｜"
+            + (dish_rating_text(rating_summary, selected_restaurant, x)
+               if ratings_available else "評分暫時無法讀取")
+        )
     )
-
+    
     notes = st.text_input("備註（可留空）", placeholder="例如：微糖微冰、飯少、炒飯加辣等")
     submit_button = st.form_submit_button(label="🚀 送出訂單")
 
     if submit_button:
         final_name = custom_name.strip() if selected_member == "其他 / 手動輸入" else selected_member
-
+        
         if not final_name:
             st.error("請填寫名字後再送出！")
         elif not selected_items:
             st.error("請至少選擇一項餐點！")
         else:
             current_df = load_orders()
-
+            
             new_rows = []
             for item in selected_items:
                 price = current_menu[item]
@@ -729,13 +869,53 @@ with st.form(key="order_form", clear_on_submit=True):
                     "金額": price,
                     "備註": notes.strip() if notes.strip() else "無"
                 })
-
+            
             updated_df = pd.concat([current_df, pd.DataFrame(new_rows)], ignore_index=True)
             save_orders(updated_df)
-
+            
             user_total = sum(current_menu[item] for item in selected_items)
             st.success(f"已記錄 {final_name} 的訂單！共 {len(selected_items)} 樣，個人小計：${user_total} 元")
             st.rerun()
+
+# --- 匿名餐點評分：與點餐表單獨立，不使用點餐姓名 ---
+st.divider()
+st.subheader("⭐ 匿名餐點評分")
+st.caption("只選餐點並評 1～5 分，不記錄姓名或評語；同名餐點依店家分開計算。")
+
+if "rating_success_message" in st.session_state:
+    st.success(st.session_state.pop("rating_success_message"))
+
+if ratings_available:
+    st.write(f"評分店家：**{selected_restaurant}**（可由上方店家選單切換）")
+    with st.form(key=f"rating_form_{selected_restaurant}", clear_on_submit=True):
+        rating_dish = st.selectbox(
+            "選擇要評分的餐點",
+            list(current_menu.keys()),
+            key=f"rating_dish_{selected_restaurant}"
+        )
+        rating_score = st.radio(
+            "你的評分（1 分最低、5 分最高）",
+            [1, 2, 3, 4, 5],
+            index=None,
+            horizontal=True,
+            format_func=lambda score: f"{'⭐' * score} {score} 分",
+            key=f"rating_score_{selected_restaurant}"
+        )
+        rating_submitted = st.form_submit_button("送出匿名評分")
+
+        if rating_submitted:
+            if rating_score is None:
+                st.error("請先選擇 1～5 分，再送出評分。")
+            else:
+                try:
+                    save_dish_rating(selected_restaurant, rating_dish, rating_score)
+                except (sqlite3.Error, ValueError):
+                    st.error("評分未儲存成功，請稍後再試。")
+                else:
+                    st.session_state["rating_success_message"] = (
+                        f"已收到「{selected_restaurant}／{rating_dish}」的 {rating_score} 分評分！"
+                    )
+                    st.rerun()
 
 # --- 統計與明細區 ---
 st.divider()
@@ -792,7 +972,7 @@ if not orders_df.empty:
             name_display = render_player_collie(name_str)
         else:
             name_display = name_str
-
+        
         person_html += f'<tr><td>{name_display}</td><td>${row["應付金額"]} 元</td></tr>'
     person_html += '</tbody></table>'
     st.markdown(person_html, unsafe_allow_html=True)
@@ -843,15 +1023,15 @@ if not orders_df.empty:
     # --- 刪除特定訂單功能（含密碼保護） ---
     with st.expander("🛠️ 訂單修改 / 刪除管理（需管理密碼）"):
         st.write("若點錯餐點，可在此選取並單筆刪除：")
-
+        
         order_options = [
             f"編號 {idx + 1}: 【{row['姓名']}】 {row['餐點']} (${row['金額']}元) - 備註: {row['備註']}"
             for idx, row in orders_df.iterrows()
         ]
-
+        
         selected_order_to_delete = st.selectbox("選擇要刪除的訂單項目", order_options)
         del_pwd = st.text_input("輸入管理密碼以確認刪除", type="password", placeholder="請輸入4位數密碼")
-
+        
         if st.button("❌ 確認刪除此筆餐點"):
             if del_pwd == ADMIN_PASSWORD:
                 selected_idx = order_options.index(selected_order_to_delete)
