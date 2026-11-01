@@ -30,7 +30,7 @@ MEMBERS = [
     "陳俊丞",
     "楊承凱", "倪宗安", "王國祐", "呂盈毅", "謝嘉雲", "顏寶容", "章哲勳", "陳威成",
     "謝文玲", "李雨柔", "皮爵赫", "陳柏伸", "黃志成", "陳柏邑", "盧廷謙", "王宗瑜",
-    "李佳航", "楊書維", "張瀚允", "陳柏豪", "曾柏豪", "周秀苓", "許皓翔", "胡煥然",
+    "張瀚允", "陳柏豪", "曾柏豪", "周秀苓", "許皓翔", "胡煥然",
     "陳永河", "秦昇瑜", "張駿謙", "王慧珍", "黃浚宏", "怡君", "fish",
     "劉紹翔", "洪成祥", "柯柏村",
     # --- BIM 團隊同仁 ---
@@ -38,44 +38,6 @@ MEMBERS = [
     # --- 彈性輸入 ---
     "其他 / 手動輸入"
 ]
-
-# 動態產生阿姚麵館完整菜單（依 4 種麵體與大小碗展開）
-def build_ayao_menu():
-    noodle_types = ["細麵", "寬麵", "意麵", "拉麵"]
-    dry_noodles = {
-        "肉燥乾麵": (50, 60),
-        "蒜泥乾麵": (50, 60),
-        "麻辣乾麵": (55, 65),
-        "榨菜肉絲乾麵": (60, 70),
-        "餛飩乾麵": (60, 70),
-        "黑芝麻醬乾麵": (60, 70),
-        "韓風炸醬乾麵": (65, 75)
-    }
-    soup_noodles = {
-        "肉燥湯麵": (50, 60),
-        "酸辣湯麵": (55, 65),
-        "餛飩湯麵": (60, 70),
-        "榨菜肉絲湯麵": (60, 70)
-    }
-    menu = {}
-    for name, (p_s, p_l) in dry_noodles.items():
-        for nt in noodle_types:
-            menu[f"{name} ({nt}/小)"] = p_s
-            menu[f"{name} ({nt}/大)"] = p_l
-            
-    for name, (p_s, p_l) in soup_noodles.items():
-        for nt in noodle_types:
-            menu[f"{name} ({nt}/小)"] = p_s
-            menu[f"{name} ({nt}/大)"] = p_l
-            
-    menu.update({
-        "魚丸湯": 30, "酸辣湯": 35, "榨菜肉絲湯": 35,
-        "貢丸湯": 40, "魚皮湯": 40, "餛飩湯": 40,
-        "肉燥飯(小)": 30, "肉燥飯(大)": 45,
-        "水餃(10顆)": 65, "水餃(每顆/請備註顆數)": 6.5,
-        "燙青菜": 30
-    })
-    return menu
 
 # 多店家完整菜單資料庫
 RESTAURANT_MENUS = {
@@ -104,7 +66,21 @@ RESTAURANT_MENUS = {
         "玉露冬瓜茶(L)": 35, "水里梅子綠(L)": 55, "茶凍桂花蜜烏龍(L)": 60, "茶凍荔枝春茶(L)": 60,
         "加料: 朝日大麥凍": 10, "加料: 烏龍粉粿": 10, "加料: 白玉珍珠": 10, "加料: 翡翠茶凍": 10
     },
-    "阿姚麵館": build_ayao_menu(),
+    "百禾": {
+        "五樣蔬菜飯盒": 85,
+        "柳葉魚仔飯盒": 95,
+        "現滷排骨飯盒": 100,
+        "咔啦腿排飯盒": 100,
+        "香酥排骨飯盒": 110,
+        "三杯雞米飯盒": 110,
+        "糖醋雞丁飯盒": 110,
+        "紅麴叉燒飯盒": 110,
+        "海陸雙拼飯盒": 120,
+        "椒鹽雞排飯盒": 120,
+        "特製雞腿飯盒": 130,
+        "商業會議餐盒（需提前預約）": 280,
+        "加菜：加一道菜": 15,
+    },
     "春福家": {
         "爌肉便當": 90, "爌肉(單點)": 50,
         "薑汁燒肉便當": 95, "薑汁燒肉(單點)": 60,
@@ -156,21 +132,6 @@ RESTAURANT_MENUS = {
         "草莓茉莉冰奶(甜冰固定)": 80, "桂圓紅棗茶(甜度固定)": 55, "桂圓紅棗鮮奶茶(甜度固定)": 75,
         "薑軍茶(甜度固定)": 55, "薑軍鮮奶茶(甜度固定)": 75, "加料: 珍珠/手工粉角/QQ/太極": 10,
         "加料: 椰果/仙草凍/茉莉綠茶凍": 10, "加料: 話梅/布丁": 15, "加料: 多多/香草冰淇淋/黑糖Q粿": 20,
-    },
-    "熊仔廚房": {
-        "蛋炒飯": 60, "肉絲炒飯": 80, "香腸炒飯": 80, "蝦仁炒飯": 80, "綜合炒飯": 90,
-        "炸豬排炒飯": 100, "炸雞排炒飯": 100, "椒鹽雞丁炒飯": 100, "炸蝦排炒飯": 100,
-        "炸雞腿炒飯": 100, "起司豬排炒飯": 100, "秘製燒肉炒飯": 100, "黃金大腿炒飯": 120,
-        "炸豬排飯": 100, "炸雞排飯": 100, "炸蝦排飯": 100, "炸雞腿飯": 100,
-        "打拋豬飯": 100, "椒鹽雞丁飯": 100, "泡菜燒肉飯": 100, "香煎鯖魚飯": 100,
-        "限量爌肉飯": 100, "秘製燒肉飯": 100, "起司豬排飯": 100, "咖哩豬排飯": 110,
-        "咖哩雞排飯": 110, "黃金大腿飯": 120, "韭菜手工大水餃(10顆)": 100,
-        "玉米手工大水餃(10顆)": 100, "高麗菜手工大水餃(10顆)": 100,
-        "泡菜手工大水餃(10顆)": 120, "剝皮辣椒手工大水餃(10顆)": 120, "荷包蛋": 15,
-        "炸豬排(單點)": 50, "炸雞排(單點)": 50, "炸蝦排(單點)": 50, "炸雞腿(單點)": 50,
-        "椒鹽雞丁(單點)": 50, "限量爌肉(單點)": 50, "香煎鯖魚(單點)": 50, "秘製燒肉(單點)": 50,
-        "起司豬排(單點)": 50, "黃金大腿(單點)": 70, "丸子湯": 30, "味噌湯": 30,
-        "青菜蛋花湯": 30, "綜合丸子湯": 50,
     },
     "窖藏飲料": {
         "特級茉香綠(M)": 25, "特級茉香綠(L)": 30, "台灣青(M)": 25, "台灣青(L)": 30,
@@ -306,10 +267,10 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
         return ""
     diff = abs(btm_idx - top_idx)
     distance_px = int((diff * row_height) / 2)
-    
+
     return f"""
     <style>
-    /* 上方選手：0-15% 蓄力 -> 15-50% 全速加速衝刺(ease-in) -> 50% 碰觸最高速 -> 50-65% 震退彈回(ease-out) -> 75-100% 絕對靜止 */
+    /* 上方選手 */
     @keyframes smashDown_{table_id} {{
         0% {{
             transform: translateY(0px) scale(1);
@@ -321,13 +282,13 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
             filter: brightness(1.2);
             animation-timing-function: ease-in;
         }}
-        50% {{ 
-            transform: translateY({distance_px}px) scale(1.35) rotate(-3deg); 
+        50% {{
+            transform: translateY({distance_px}px) scale(1.35) rotate(-3deg);
             filter: brightness(2.8) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #ff3300);
             animation-timing-function: ease-out;
         }}
-        65% {{ 
-            transform: translateY({int(distance_px * 0.35)}px) scale(1.1) rotate(4deg); 
+        65% {{
+            transform: translateY({int(distance_px * 0.35)}px) scale(1.1) rotate(4deg);
             filter: brightness(1.3);
             animation-timing-function: ease-in-out;
         }}
@@ -335,13 +296,13 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
             transform: translateY(0px) scale(1);
             filter: brightness(1);
         }}
-        100% {{ 
-            transform: translateY(0px) scale(1); 
-            filter: brightness(1); 
+        100% {{
+            transform: translateY(0px) scale(1);
+            filter: brightness(1);
         }}
     }}
 
-    /* 下方選手：0-15% 蓄力 -> 15-50% 全速加速衝刺(ease-in) -> 50% 碰觸最高速 -> 50-65% 震退彈回(ease-out) -> 75-100% 絕對靜止 */
+    /* 下方選手 */
     @keyframes smashUp_{table_id} {{
         0% {{
             transform: translateY(0px) scale(1);
@@ -353,13 +314,13 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
             filter: brightness(1.2);
             animation-timing-function: ease-in;
         }}
-        50% {{ 
-            transform: translateY(-{distance_px}px) scale(1.35) rotate(3deg); 
+        50% {{
+            transform: translateY(-{distance_px}px) scale(1.35) rotate(3deg);
             filter: brightness(2.8) drop-shadow(0 0 25px #ffffff) drop-shadow(0 0 45px #00e5ff);
             animation-timing-function: ease-out;
         }}
-        65% {{ 
-            transform: translateY(-{int(distance_px * 0.35)}px) scale(1.1) rotate(-4deg); 
+        65% {{
+            transform: translateY(-{int(distance_px * 0.35)}px) scale(1.1) rotate(-4deg);
             filter: brightness(1.3);
             animation-timing-function: ease-in-out;
         }}
@@ -367,35 +328,35 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
             transform: translateY(0px) scale(1);
             filter: brightness(1);
         }}
-        100% {{ 
-            transform: translateY(0px) scale(1); 
-            filter: brightness(1); 
+        100% {{
+            transform: translateY(0px) scale(1);
+            filter: brightness(1);
         }}
     }}
 
-    /* 中心大爆炸：49% 隱形 -> 50% 撞擊瞬間零時差爆發 -> 56% 快速消散 -> 57-100% 絕對隱形 */
+    /* 中心大爆炸 */
     @keyframes explosionSupernova_{table_id} {{
-        0%, 49% {{ 
-            opacity: 0; 
-            transform: translate(-50%, -50%) scale(0.1) rotate(0deg); 
+        0%, 49% {{
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.1) rotate(0deg);
         }}
-        50% {{ 
-            opacity: 1; 
-            transform: translate(-50%, -50%) scale(3.8) rotate(45deg); 
+        50% {{
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(3.8) rotate(45deg);
             box-shadow: 0 0 35px #ffffff, 0 0 70px #ffea00, 0 0 100px #ff3300, 0 0 120px #00e5ff;
         }}
-        54% {{ 
-            opacity: 0.85; 
-            transform: translate(-50%, -50%) scale(5.6) rotate(90deg); 
+        54% {{
+            opacity: 0.85;
+            transform: translate(-50%, -50%) scale(5.6) rotate(90deg);
             box-shadow: 0 0 50px rgba(255,255,255,1), 0 0 90px rgba(255,69,0,0.8), 0 0 115px rgba(0,229,255,0.8);
         }}
-        56% {{ 
-            opacity: 0; 
-            transform: translate(-50%, -50%) scale(7.0) rotate(140deg); 
+        56% {{
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(7.0) rotate(140deg);
         }}
-        100% {{ 
-            opacity: 0; 
-            transform: translate(-50%, -50%) scale(0.1); 
+        100% {{
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.1);
         }}
     }}
 
@@ -432,7 +393,7 @@ def generate_dynamic_clash_css(table_id, top_idx, btm_idx, row_height=48):
     </style>
     """
 
-# 注入常態、粒子與邊牧特效
+# 注入常態、粒子與哈士奇特效
 st.markdown("""
 <style>
 /* ================== 1. 陳俊丞：流動烈焰 + 升騰火星 ================== */
@@ -695,6 +656,7 @@ def render_player_ice(name_str, table_id="", is_top=None):
 def render_player_collie(name_str):
     # 保留原函式名稱，讓所有名冊直接套用新的哈士奇特效。
     from html import escape
+
     husky_svg = (
         '<svg class="husky-face" viewBox="0 0 64 64" width="32" height="32" '
         'fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="霓虹哈士奇">'
@@ -737,26 +699,26 @@ with st.form(key="order_form", clear_on_submit=True):
     custom_name = ""
     if selected_member == "其他 / 手動輸入":
         custom_name = st.text_input("請輸入你的名字 / 暱稱", placeholder="例如：新同仁")
-    
+
     selected_items = st.multiselect(
-        "選擇餐點品項（可多選）", 
+        "選擇餐點品項（可多選）",
         list(current_menu.keys()),
         format_func=lambda x: f"{x} (${current_menu[x]} 元)"
     )
-    
+
     notes = st.text_input("備註（可留空）", placeholder="例如：微糖微冰、飯少、炒飯加辣等")
     submit_button = st.form_submit_button(label="🚀 送出訂單")
 
     if submit_button:
         final_name = custom_name.strip() if selected_member == "其他 / 手動輸入" else selected_member
-        
+
         if not final_name:
             st.error("請填寫名字後再送出！")
         elif not selected_items:
             st.error("請至少選擇一項餐點！")
         else:
             current_df = load_orders()
-            
+
             new_rows = []
             for item in selected_items:
                 price = current_menu[item]
@@ -767,10 +729,10 @@ with st.form(key="order_form", clear_on_submit=True):
                     "金額": price,
                     "備註": notes.strip() if notes.strip() else "無"
                 })
-            
+
             updated_df = pd.concat([current_df, pd.DataFrame(new_rows)], ignore_index=True)
             save_orders(updated_df)
-            
+
             user_total = sum(current_menu[item] for item in selected_items)
             st.success(f"已記錄 {final_name} 的訂單！共 {len(selected_items)} 樣，個人小計：${user_total} 元")
             st.rerun()
@@ -830,7 +792,7 @@ if not orders_df.empty:
             name_display = render_player_collie(name_str)
         else:
             name_display = name_str
-        
+
         person_html += f'<tr><td>{name_display}</td><td>${row["應付金額"]} 元</td></tr>'
     person_html += '</tbody></table>'
     st.markdown(person_html, unsafe_allow_html=True)
@@ -881,15 +843,15 @@ if not orders_df.empty:
     # --- 刪除特定訂單功能（含密碼保護） ---
     with st.expander("🛠️ 訂單修改 / 刪除管理（需管理密碼）"):
         st.write("若點錯餐點，可在此選取並單筆刪除：")
-        
+
         order_options = [
             f"編號 {idx + 1}: 【{row['姓名']}】 {row['餐點']} (${row['金額']}元) - 備註: {row['備註']}"
             for idx, row in orders_df.iterrows()
         ]
-        
+
         selected_order_to_delete = st.selectbox("選擇要刪除的訂單項目", order_options)
         del_pwd = st.text_input("輸入管理密碼以確認刪除", type="password", placeholder="請輸入4位數密碼")
-        
+
         if st.button("❌ 確認刪除此筆餐點"):
             if del_pwd == ADMIN_PASSWORD:
                 selected_idx = order_options.index(selected_order_to_delete)
