@@ -1,9 +1,13 @@
 import streamlit as st
 import pandas as pd
 from datetime import date
-import os
-import sqlite3
-from contextlib import closing
+import json
+import io
+import hashlib
+import uuid
+from urllib.request import Request, urlopen
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlsplit
 
 st.set_page_config(page_title="今日午餐點餐系統", page_icon="🍱", layout="centered")
 st.title("🍱 今日午餐點餐小幫手")
@@ -43,47 +47,123 @@ if not st.session_state.get(RATING_NOTICE_KEY, False) or reopen_rating_notice:
     st.session_state[RATING_NOTICE_KEY] = True
     show_rating_announcement()
 
-# 共用資料儲存檔案
-DATA_FILE = "orders_data.csv"
-# 評分獨立保存，清空訂單時仍保留；不儲存姓名或評語。
-RATINGS_FILE = "ratings_data.sqlite3"
 ADMIN_PASSWORD = "1120"
 
-# 讀取共用訂單資料
+# 訂單與匿名評分都寫入外部 Supabase，不使用主機暫存檔。
+# 連線失敗時明確停止操作，不把錯誤視為「沒有訂單」。
+class StorageError(Exception):
+    pass
+
+
+def database_request(method, endpoint, payload=None, prefer=None):
+    try:
+        config = st.secrets["supabase"]
+        base_url = str(config["url"]).strip().rstrip("/")
+        secret_key = str(config["secret_key"]).strip()
+    except (KeyError, FileNotFoundError):
+        raise StorageError("尚未設定資料庫，請先在 Streamlit Settings → Secrets 填入 Supabase 設定。") from None
+    parsed = urlsplit(base_url)
+    if (parsed.scheme != "https" or not parsed.hostname or parsed.path
+            or parsed.query or parsed.fragment or parsed.username or parsed.password):
+        raise StorageError("Supabase URL 格式不正確，請填入完整的 https://專案代碼.supabase.co。")
+    if not secret_key.startswith("sb_secret_"):
+        raise StorageError("請在 Secrets 填入 Supabase 後端專用的 sb_secret_ 金鑰。")
+    headers = {"apikey": secret_key, "Content-Type": "application/json", "Accept": "application/json"}
+    if prefer:
+        headers["Prefer"] = prefer
+    data = json.dumps(payload, ensure_ascii=False).encode("utf-8") if payload is not None else None
+    request = Request(base_url + "/rest/v1/" + endpoint, data=data, headers=headers, method=method)
+    try:
+        # 不自動重試寫入：網路中斷時先確認資料，避免重複點餐。
+        with urlopen(request, timeout=20) as response:
+            body = response.read()
+        return json.loads(body) if body else None
+    except HTTPError as error:
+        if error.code in (401, 403):
+            message = "資料庫授權失敗，請檢查 Secrets 的金鑰及資料表權限。"
+        elif error.code == 404:
+            message = "找不到資料表或評分函式，請先在 Supabase 執行 setup.sql。"
+        else:
+            message = f"資料庫暫時無法完成操作（HTTP {error.code}），請稍後重新整理確認。"
+        raise StorageError(message) from None
+    except (URLError, TimeoutError, OSError, ValueError):
+        raise StorageError("無法確認資料庫操作結果。請稍後重新整理檢查，確認後再送出，避免重複。") from None
+
+
 def load_orders():
-    if os.path.exists(DATA_FILE):
-        try:
-            return pd.read_csv(DATA_FILE)
-        except Exception:
-            return pd.DataFrame(columns=["店家", "姓名", "餐點", "金額", "備註"])
-    return pd.DataFrame(columns=["店家", "姓名", "餐點", "金額", "備註"])
+    rows = []
+    offset = 0
+    page_size = 500
+    while True:
+        page = database_request(
+            "GET", "lunch_orders?select=id,restaurant,name,dish,amount,notes"
+            f"&order=created_at.asc,id.asc&limit={page_size}&offset={offset}"
+        )
+        if not isinstance(page, list):
+            raise StorageError("訂單資料格式異常，已停止讀寫；請檢查資料庫。")
+        rows.extend(page)
+        if len(page) < page_size:
+            break
+        offset += page_size
+    records = [{
+        "_order_id": row["id"], "店家": row["restaurant"], "姓名": row["name"],
+        "餐點": row["dish"], "金額": float(row["amount"]), "備註": row["notes"]
+    } for row in rows]
+    return pd.DataFrame(records, columns=["_order_id", "店家", "姓名", "餐點", "金額", "備註"])
 
-# 儲存共用訂單資料
-def save_orders(df):
-    df.to_csv(DATA_FILE, index=False, encoding='utf-8-sig')
 
-# 匿名餐點評分：只儲存店家、餐點、1～5 分。
-def initialize_ratings():
-    with closing(sqlite3.connect(RATINGS_FILE, timeout=10)) as conn:
-        with conn:
-            conn.execute("""
-                CREATE TABLE IF NOT EXISTS dish_ratings (
-                    restaurant TEXT NOT NULL,
-                    dish TEXT NOT NULL,
-                    score INTEGER NOT NULL CHECK (score BETWEEN 1 AND 5)
-                )
-            """)
+def add_orders(rows):
+    records = [{
+        "id": str(uuid.uuid4()), "restaurant": row["店家"], "name": row["姓名"],
+        "dish": row["餐點"], "amount": row["金額"], "notes": row["備註"]
+    } for row in rows]
+    # 一次新增本次餐點，不覆寫其他同事的訂單。
+    database_request("POST", "lunch_orders", records, prefer="return=minimal")
+
+
+def import_legacy_orders(csv_bytes):
+    try:
+        frame = pd.read_csv(io.BytesIO(csv_bytes), keep_default_na=False)
+    except Exception:
+        raise ValueError("無法讀取 CSV，請使用原點餐網站下載的報表。") from None
+    required = ["店家", "姓名", "餐點", "金額", "備註"]
+    if not all(column in frame.columns for column in required):
+        raise ValueError("CSV 需包含店家、姓名、餐點、金額、備註五欄。")
+    if frame.empty:
+        raise ValueError("這份 CSV 沒有訂單。")
+    amounts = pd.to_numeric(frame["金額"], errors="coerce")
+    if amounts.isna().any() or not amounts.between(0, 99999999.99).all():
+        raise ValueError("CSV 的金額欄有無效數字，請先檢查檔案。")
+    fingerprint = hashlib.sha256(csv_bytes).hexdigest()
+    records = [{
+        "id": str(uuid.uuid5(uuid.NAMESPACE_URL, f"lunch-import:{fingerprint}:{index}")),
+        "restaurant": str(row["店家"]), "name": str(row["姓名"]),
+        "dish": str(row["餐點"]), "amount": float(amounts.iloc[index]), "notes": str(row["備註"])
+    } for index, (_, row) in enumerate(frame.iterrows())]
+    for offset in range(0, len(records), 500):
+        database_request("POST", "lunch_orders?on_conflict=id", records[offset:offset + 500],
+                         prefer="resolution=ignore-duplicates,return=minimal")
+    return len(records)
+
+
+def delete_order(order_id):
+    safe_id = str(uuid.UUID(str(order_id)))
+    database_request("DELETE", "lunch_orders?id=eq." + safe_id, prefer="return=minimal")
+
+
+def clear_orders(order_ids):
+    # 只清空管理員畫面上確認過的訂單；同時新增的訂單不會一起被刪掉。
+    safe_ids = [str(uuid.UUID(str(order_id))) for order_id in order_ids]
+    if safe_ids:
+        database_request("POST", "rpc/lunch_clear_orders", {"order_ids": safe_ids})
 
 
 def load_rating_summary():
-    with closing(sqlite3.connect(RATINGS_FILE, timeout=10)) as conn:
-        rows = conn.execute("""
-            SELECT restaurant, dish, AVG(score), COUNT(*)
-            FROM dish_ratings
-            GROUP BY restaurant, dish
-        """).fetchall()
-    return {(restaurant, dish): (average, count)
-            for restaurant, dish, average, count in rows}
+    rows = database_request("POST", "rpc/lunch_rating_summary", {})
+    if not isinstance(rows, list):
+        raise StorageError("評分資料格式異常，請檢查資料庫。")
+    return {(row["restaurant"], row["dish"]): (float(row["average_score"]), int(row["rating_count"]))
+            for row in rows}
 
 
 def save_dish_rating(restaurant, dish, score):
@@ -91,12 +171,9 @@ def save_dish_rating(restaurant, dish, score):
         raise ValueError("請選擇有效的店家與餐點。")
     if type(score) is not int or not 1 <= score <= 5:
         raise ValueError("請選擇 1～5 分。")
-    with closing(sqlite3.connect(RATINGS_FILE, timeout=10)) as conn:
-        with conn:
-            conn.execute(
-                "INSERT INTO dish_ratings (restaurant, dish, score) VALUES (?, ?, ?)",
-                (restaurant, dish, score)
-            )
+    database_request("POST", "lunch_ratings", {
+        "id": str(uuid.uuid4()), "restaurant": restaurant, "dish": dish, "score": score
+    }, prefer="return=minimal")
 
 
 def dish_rating_text(summary, restaurant, dish):
@@ -809,13 +886,12 @@ selected_restaurant = st.selectbox("選擇今日訂購店家", list(RESTAURANT_M
 current_menu = RESTAURANT_MENUS[selected_restaurant]
 
 try:
-    initialize_ratings()
     rating_summary = load_rating_summary()
     ratings_available = True
-except sqlite3.Error:
+except StorageError as error:
     rating_summary = {}
     ratings_available = False
-    st.warning("目前無法讀取評分，點餐功能仍可使用；請稍後再試評分。")
+    st.warning(str(error))
 
 if ratings_available:
     with st.expander("⭐ 查看本店各餐點評分"):
@@ -857,8 +933,6 @@ with st.form(key="order_form", clear_on_submit=True):
         elif not selected_items:
             st.error("請至少選擇一項餐點！")
         else:
-            current_df = load_orders()
-            
             new_rows = []
             for item in selected_items:
                 price = current_menu[item]
@@ -870,8 +944,11 @@ with st.form(key="order_form", clear_on_submit=True):
                     "備註": notes.strip() if notes.strip() else "無"
                 })
             
-            updated_df = pd.concat([current_df, pd.DataFrame(new_rows)], ignore_index=True)
-            save_orders(updated_df)
+            try:
+                add_orders(new_rows)
+            except StorageError as error:
+                st.error(str(error))
+                st.stop()
             
             user_total = sum(current_menu[item] for item in selected_items)
             st.success(f"已記錄 {final_name} 的訂單！共 {len(selected_items)} 樣，個人小計：${user_total} 元")
@@ -909,8 +986,8 @@ if ratings_available:
             else:
                 try:
                     save_dish_rating(selected_restaurant, rating_dish, rating_score)
-                except (sqlite3.Error, ValueError):
-                    st.error("評分未儲存成功，請稍後再試。")
+                except (StorageError, ValueError) as error:
+                    st.error(str(error))
                 else:
                     st.session_state["rating_success_message"] = (
                         f"已收到「{selected_restaurant}／{rating_dish}」的 {rating_score} 分評分！"
@@ -921,7 +998,31 @@ if ratings_available:
 st.divider()
 st.subheader("📊 目前點餐狀況與統計")
 
-orders_df = load_orders()
+try:
+    orders_df = load_orders()
+except StorageError as error:
+    st.error(str(error))
+    st.stop()
+
+with st.expander("📂 匯入舊訂單 CSV（需管理密碼）"):
+    st.caption("僅匯入舊版匯出的訂單。同一份未修改的檔案重複匯入不會新增重複紀錄。")
+    legacy_csv = st.file_uploader("選擇舊訂單報表", type=["csv"], key="legacy_orders_csv")
+    import_pwd = st.text_input("輸入管理密碼以匯入", type="password", key="legacy_orders_pwd")
+    if st.button("確認匯入舊訂單", key="import_legacy_orders"):
+        if import_pwd != ADMIN_PASSWORD:
+            st.error("密碼錯誤，無法匯入！")
+        elif legacy_csv is None:
+            st.error("請先選擇 CSV 檔案。")
+        else:
+            try:
+                import_legacy_orders(legacy_csv.getvalue())
+            except (StorageError, ValueError) as error:
+                st.error(str(error))
+            else:
+                st.session_state["import_success"] = True
+                st.rerun()
+if st.session_state.pop("import_success", False):
+    st.success("已完成匯入；同一份檔案內已匯入的紀錄會自動略過。")
 
 if not orders_df.empty:
     has_chen = any("俊丞" in str(name) for name in orders_df["姓名"])
@@ -1035,8 +1136,11 @@ if not orders_df.empty:
         if st.button("❌ 確認刪除此筆餐點"):
             if del_pwd == ADMIN_PASSWORD:
                 selected_idx = order_options.index(selected_order_to_delete)
-                updated_df = orders_df.drop(index=selected_idx).reset_index(drop=True)
-                save_orders(updated_df)
+                try:
+                    delete_order(orders_df.iloc[selected_idx]["_order_id"])
+                except StorageError as error:
+                    st.error(str(error))
+                    st.stop()
                 st.success("該筆訂單已成功刪除！")
                 st.rerun()
             else:
@@ -1045,7 +1149,7 @@ if not orders_df.empty:
     st.write("")
     col_btn1, col_btn2 = st.columns(2)
     with col_btn1:
-        csv_data = orders_df.to_csv(index=False).encode('utf-8-sig')
+        csv_data = orders_df.drop(columns=['_order_id']).to_csv(index=False).encode('utf-8-sig')
         st.download_button(
             label="📥 下載今日訂單報表 (CSV)",
             data=csv_data,
@@ -1058,8 +1162,11 @@ if not orders_df.empty:
             clear_pwd = st.text_input("請輸入管理密碼確認清空", type="password", key="clear_all_pwd")
             if st.button("確認全數清空"):
                 if clear_pwd == ADMIN_PASSWORD:
-                    if os.path.exists(DATA_FILE):
-                        os.remove(DATA_FILE)
+                    try:
+                        clear_orders(orders_df["_order_id"].tolist())
+                    except StorageError as error:
+                        st.error(str(error))
+                        st.stop()
                     st.success("已清空所有訂單！")
                     st.rerun()
                 else:
