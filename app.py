@@ -13,40 +13,6 @@ st.set_page_config(page_title="今日午餐點餐系統", page_icon="🍱", layo
 st.title("🍱 今日午餐點餐小幫手")
 st.caption(f"點餐日期：{date.today().strftime('%Y-%m-%d')}")
 
-# 評分功能公告：每個瀏覽器連線工作階段自動顯示一次。
-RATING_NOTICE_KEY = "rating_notice_seen_v1"
-
-
-def rating_announcement_content():
-    st.markdown("### ⭐ 餐點匿名評分上線囉！")
-    st.write("吃過的餐點好不好吃？歡迎留下 1～5 分，讓大家下次點餐更有參考！")
-    st.markdown(
-        "- **不用填姓名，也不用寫評語**。\n"
-        "- 選擇店家，到下方「匿名餐點評分」選餐點並送出分數。\n"
-        "- 點餐選單會顯示每道餐點的**平均分數與評分筆數**。"
-    )
-    st.caption("請依實際用餐感受評分，謝謝大家！")
-    if st.button("知道了，開始點餐", key="dismiss_rating_notice", type="primary"):
-        st.session_state[RATING_NOTICE_KEY] = True
-        st.rerun()
-
-
-# 支援正式版與較早提供的 experimental_dialog。
-_dialog = getattr(st, "dialog", None) or getattr(st, "experimental_dialog", None)
-if _dialog is not None:
-    show_rating_announcement = _dialog("📣 點餐系統公告")(rating_announcement_content)
-else:
-    def show_rating_announcement():
-        with st.expander("📣 點餐系統公告", expanded=True):
-            rating_announcement_content()
-
-
-reopen_rating_notice = st.button("📣 查看評分功能公告", key="open_rating_notice")
-if not st.session_state.get(RATING_NOTICE_KEY, False) or reopen_rating_notice:
-    # 在開啟時標記，使用 X、ESC 或點擊視窗外關閉也不會反覆彈出。
-    st.session_state[RATING_NOTICE_KEY] = True
-    show_rating_announcement()
-
 ADMIN_PASSWORD = "1120"
 
 # 訂單與匿名評分都寫入外部 Supabase，不使用主機暫存檔。
@@ -193,6 +159,7 @@ MEMBERS = [
     "張瀚允", "陳柏豪", "曾柏豪", "周秀苓", "許皓翔", "胡煥然",
     "陳永河", "秦昇瑜", "張駿謙", "王慧珍", "黃浚宏", "怡君", "fish",
     "劉紹翔", "洪成祥", "柯柏村",
+    "陳躍中", "楊乃穎",
     # --- BIM 團隊同仁 ---
     "林詩珊", "謝淳淇", "歐柏鋒", "林慧語", "吳詩田",
     # --- 彈性輸入 ---
@@ -453,6 +420,42 @@ RESTAURANT_MENUS = {
         "蟹肉棒": 20, "鑫鑫腸": 20, "甜不辣": 20, "小黑輪": 20, "大貢丸": 20,
         "水晶餃": 20, "凍豆腐": 20, "龍蝦沙拉": 20, "日本海帶": 20, "黃金魚丸": 20,
         "百頁豆腐": 20,
+    },
+    "食材有限": {
+        "雞絲涼粉（小）": 60,
+        "雞絲涼粉（大）": 100,
+        "海鮮涼粉（小）": 70,
+        "海鮮涼粉（大）": 110,
+        "霸氣雞腿涼粉": 120,
+        "手撕雞肉飯": 60,
+        "肉燥飯": 50,
+        "口水雞": 180,
+        "¼ 油雞": 150,
+        "½ 油雞": 250,
+        "海南雞腿便當（午間限定）": 110,
+        "油雞腿便當（午間限定）": 110,
+        "雞絲便當（午間限定）": 80,
+        "肉燥便當（午間限定）": 70,
+        "鍋燒意麵（滷味）": 15,
+        "蒸煮麵（滷味）": 15,
+        "科學麵（滷味）": 15,
+        "鑫鑫腸（4條）": 20,
+        "鳥蛋（4顆）": 20,
+        "甜不辣": 20,
+        "米血": 20,
+        "海帶": 20,
+        "豆乾": 20,
+        "雞爪（4隻）": 25,
+        "豬耳朵": 30,
+        "豬頭皮": 30,
+        "豬大腸": 40,
+        "豬肉片": 40,
+        "花生": 25,
+        "木耳": 30,
+        "娃娃菜": 30,
+        "杏鮑菇": 30,
+        "高麗菜": 30,
+        "滷味蔬菜兩樣（請備註品項）": 50,
     },
     "御井燒味": {
         "蜜汁叉燒餐盒": 150,
@@ -896,6 +899,11 @@ st.subheader("📝 我要點餐")
 
 selected_restaurant = st.selectbox("選擇今日訂購店家", list(RESTAURANT_MENUS.keys()))
 current_menu = RESTAURANT_MENUS[selected_restaurant]
+
+if selected_restaurant == "食材有限":
+    st.caption("涼粉可選酸辣、胡麻、綜合。滷味可選原味、小辣、中辣、大辣，請填在備註。")
+    st.caption("木耳、娃娃菜、杏鮑菇、高麗菜任選兩樣 $50，請備註品項。")
+    st.caption("滷味滿 $100 才提供盒裝。單份未滿 $50，店家另收 $20 拌炒費，請於結帳時核對。")
 
 try:
     rating_summary = load_rating_summary()
