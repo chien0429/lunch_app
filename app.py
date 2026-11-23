@@ -1,6 +1,10 @@
 import streamlit as st
 import pandas as pd
-from datetime import date
+from datetime import datetime, timedelta
+from html import escape
+from zoneinfo import ZoneInfo
+import re
+import secrets
 import json
 import io
 import hashlib
@@ -11,12 +15,9 @@ from urllib.parse import urlsplit
 
 st.set_page_config(page_title="今日午餐點餐系統", page_icon="🍱", layout="centered")
 st.title("🍱 今日午餐點餐小幫手")
-st.caption(f"點餐日期：{date.today().strftime('%Y-%m-%d')}")
+st.caption(f"點餐日期：{datetime.now(ZoneInfo('Asia/Taipei')):%Y-%m-%d}")
 
-ADMIN_PASSWORD = "1120"
-
-# 訂單與匿名評分都寫入外部 Supabase，不使用主機暫存檔。
-# 連線失敗時明確停止操作，不把錯誤視為「沒有訂單」。
+# 使用 Supabase 儲存訂單。資料庫錯誤會直接顯示在畫面。
 class StorageError(Exception):
     pass
 
@@ -48,7 +49,7 @@ def database_request(method, endpoint, payload=None, prefer=None):
         if error.code in (401, 403):
             message = "資料庫授權失敗，請檢查 Secrets 的金鑰及資料表權限。"
         elif error.code == 404:
-            message = "找不到資料表或評分函式，請先在 Supabase 執行 setup.sql。"
+            message = "找不到點餐資料表或函式。新功能需先在 Supabase 執行 setup_lunch_groups.sql。"
         else:
             message = f"資料庫暫時無法完成操作（HTTP {error.code}），請稍後重新整理確認。"
         raise StorageError(message) from None
@@ -76,15 +77,6 @@ def load_orders():
         "餐點": row["dish"], "金額": float(row["amount"]), "備註": row["notes"]
     } for row in rows]
     return pd.DataFrame(records, columns=["_order_id", "店家", "姓名", "餐點", "金額", "備註"])
-
-
-def add_orders(rows):
-    records = [{
-        "id": str(uuid.uuid4()), "restaurant": row["店家"], "name": row["姓名"],
-        "dish": row["餐點"], "amount": row["金額"], "notes": row["備註"]
-    } for row in rows]
-    # 一次新增本次餐點，不覆寫其他同事的訂單。
-    database_request("POST", "lunch_orders", records, prefer="return=minimal")
 
 
 def import_legacy_orders(csv_bytes):
@@ -115,39 +107,6 @@ def import_legacy_orders(csv_bytes):
 def delete_order(order_id):
     safe_id = str(uuid.UUID(str(order_id)))
     database_request("DELETE", "lunch_orders?id=eq." + safe_id, prefer="return=minimal")
-
-
-def clear_orders(order_ids):
-    # 只清空管理員畫面上確認過的訂單；同時新增的訂單不會一起被刪掉。
-    safe_ids = [str(uuid.UUID(str(order_id))) for order_id in order_ids]
-    if safe_ids:
-        database_request("POST", "rpc/lunch_clear_orders", {"order_ids": safe_ids})
-
-
-def load_rating_summary():
-    rows = database_request("POST", "rpc/lunch_rating_summary", {})
-    if not isinstance(rows, list):
-        raise StorageError("評分資料格式異常，請檢查資料庫。")
-    return {(row["restaurant"], row["dish"]): (float(row["average_score"]), int(row["rating_count"]))
-            for row in rows}
-
-
-def save_dish_rating(restaurant, dish, score):
-    if restaurant not in RESTAURANT_MENUS or dish not in RESTAURANT_MENUS[restaurant]:
-        raise ValueError("請選擇有效的店家與餐點。")
-    if type(score) is not int or not 1 <= score <= 5:
-        raise ValueError("請選擇 1～5 分。")
-    database_request("POST", "lunch_ratings", {
-        "id": str(uuid.uuid4()), "restaurant": restaurant, "dish": dish, "score": score
-    }, prefer="return=minimal")
-
-
-def dish_rating_text(summary, restaurant, dish):
-    result = summary.get((restaurant, dish))
-    if result is None:
-        return "尚無評分"
-    average, count = result
-    return f"⭐ {average:.1f}/5（{count} 筆評分）"
 
 
 # 常用同事名單
@@ -860,6 +819,7 @@ st.markdown("""
 
 # 渲染角色名牌（俊丞、臨恩、寶容）
 def render_player_flame(name_str, table_id="", is_top=None):
+    name_str = escape(str(name_str))
     if is_top is None:
         return f'<span class="flame-name-wrapper">{name_str}<span class="flame-spark-1"></span><span class="flame-spark-2"></span></span>'
     if is_top:
@@ -867,6 +827,7 @@ def render_player_flame(name_str, table_id="", is_top=None):
     return f'<span class="smash-bottom-{table_id}"><span class="flame-name-wrapper">{name_str}<span class="flame-spark-1"></span><span class="flame-spark-2"></span></span></span>'
 
 def render_player_ice(name_str, table_id="", is_top=None):
+    name_str = escape(str(name_str))
     if is_top is None:
         return f'<span class="ice-name-wrapper">{name_str}<span class="ice-crystal-1"></span><span class="ice-crystal-2"></span></span>'
     if is_top:
@@ -875,7 +836,6 @@ def render_player_ice(name_str, table_id="", is_top=None):
 
 def render_player_collie(name_str):
     # 保留原函式名稱，讓所有名冊直接套用新的哈士奇特效。
-    from html import escape
     husky_svg = (
         '<svg class="husky-face" viewBox="0 0 64 64" width="32" height="32" '
         'fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="霓虹哈士奇">'
@@ -905,166 +865,14 @@ def render_player_collie(name_str):
         '</span></span>'
     )
 
-# --- 點餐區 ---
-st.subheader("📝 我要點餐")
 
-selected_restaurant = st.selectbox("選擇今日訂購店家", list(RESTAURANT_MENUS.keys()))
-current_menu = RESTAURANT_MENUS[selected_restaurant]
 
-if selected_restaurant == "食材有限":
-    st.caption("涼粉可選酸辣、胡麻、綜合。滷味可選原味、小辣、中辣、大辣，請填在備註。")
-    st.caption("木耳、娃娃菜、杏鮑菇、高麗菜任選兩樣 $50，請備註品項。")
-    st.caption("滷味滿 $100 才提供盒裝。單份未滿 $50，店家另收 $20 拌炒費，請於結帳時核對。")
-
-if selected_restaurant == "痴飯吧":
-    st.caption("會議便當 $200～$300，請先向店家確認菜色與價格。")
-    st.caption("3 公里內滿 10 個免費外送。大量訂購請提前來電或私訊預訂。訂購電話 0913-026-253。")
-
-try:
-    rating_summary = load_rating_summary()
-    ratings_available = True
-except StorageError as error:
-    rating_summary = {}
-    ratings_available = False
-    st.warning(str(error))
-
-if ratings_available:
-    with st.expander("⭐ 查看本店各餐點評分"):
-        st.table(pd.DataFrame([
-            {
-                "餐點": item,
-                "價格": price,
-                "評分": dish_rating_text(rating_summary, selected_restaurant, item)
-            }
-            for item, price in current_menu.items()
-        ]))
-
-# 名字選擇
-selected_member = st.selectbox("選擇點餐人員", MEMBERS)
-
-with st.form(key="order_form", clear_on_submit=True):
-    custom_name = ""
-    if selected_member == "其他 / 手動輸入":
-        custom_name = st.text_input("請輸入你的名字 / 暱稱", placeholder="例如：新同仁")
-    
-    selected_items = st.multiselect(
-        "選擇餐點品項（可多選）", 
-        list(current_menu.keys()),
-        format_func=lambda x: (
-            f"{x} (${current_menu[x]} 元)｜"
-            + (dish_rating_text(rating_summary, selected_restaurant, x)
-               if ratings_available else "評分暫時無法讀取")
-        )
-    )
-    
-    notes = st.text_input("備註（可留空）", placeholder="例如：微糖微冰、飯少、炒飯加辣等")
-    submit_button = st.form_submit_button(label="🚀 送出訂單")
-
-    if submit_button:
-        final_name = custom_name.strip() if selected_member == "其他 / 手動輸入" else selected_member
-        
-        if not final_name:
-            st.error("請填寫名字後再送出！")
-        elif not selected_items:
-            st.error("請至少選擇一項餐點！")
-        else:
-            new_rows = []
-            for item in selected_items:
-                price = current_menu[item]
-                new_rows.append({
-                    "店家": selected_restaurant,
-                    "姓名": final_name,
-                    "餐點": item,
-                    "金額": price,
-                    "備註": notes.strip() if notes.strip() else "無"
-                })
-            
-            try:
-                add_orders(new_rows)
-            except StorageError as error:
-                st.error(str(error))
-                st.stop()
-            
-            user_total = sum(current_menu[item] for item in selected_items)
-            st.success(f"已記錄 {final_name} 的訂單！共 {len(selected_items)} 樣，個人小計：${user_total} 元")
-            st.rerun()
-
-# --- 匿名餐點評分：與點餐表單獨立，不使用點餐姓名 ---
-st.divider()
-st.subheader("⭐ 匿名餐點評分")
-st.caption("只選餐點並評 1～5 分，不記錄姓名或評語；同名餐點依店家分開計算。")
-
-if "rating_success_message" in st.session_state:
-    st.success(st.session_state.pop("rating_success_message"))
-
-if ratings_available:
-    st.write(f"評分店家：**{selected_restaurant}**（可由上方店家選單切換）")
-    with st.form(key=f"rating_form_{selected_restaurant}", clear_on_submit=True):
-        rating_dish = st.selectbox(
-            "選擇要評分的餐點",
-            list(current_menu.keys()),
-            key=f"rating_dish_{selected_restaurant}"
-        )
-        rating_score = st.radio(
-            "你的評分（1 分最低、5 分最高）",
-            [1, 2, 3, 4, 5],
-            index=None,
-            horizontal=True,
-            format_func=lambda score: f"{'⭐' * score} {score} 分",
-            key=f"rating_score_{selected_restaurant}"
-        )
-        rating_submitted = st.form_submit_button("送出匿名評分")
-
-        if rating_submitted:
-            if rating_score is None:
-                st.error("請先選擇 1～5 分，再送出評分。")
-            else:
-                try:
-                    save_dish_rating(selected_restaurant, rating_dish, rating_score)
-                except (StorageError, ValueError) as error:
-                    st.error(str(error))
-                else:
-                    st.session_state["rating_success_message"] = (
-                        f"已收到「{selected_restaurant}／{rating_dish}」的 {rating_score} 分評分！"
-                    )
-                    st.rerun()
-
-# --- 統計與明細區 ---
-st.divider()
-st.subheader("📊 目前點餐狀況與統計")
-
-try:
-    orders_df = load_orders()
-except StorageError as error:
-    st.error(str(error))
-    st.stop()
-
-with st.expander("📂 匯入舊訂單 CSV（需管理密碼）"):
-    st.caption("僅匯入舊版匯出的訂單。同一份未修改的檔案重複匯入不會新增重複紀錄。")
-    legacy_csv = st.file_uploader("選擇舊訂單報表", type=["csv"], key="legacy_orders_csv")
-    import_pwd = st.text_input("輸入管理密碼以匯入", type="password", key="legacy_orders_pwd")
-    if st.button("確認匯入舊訂單", key="import_legacy_orders"):
-        if import_pwd != ADMIN_PASSWORD:
-            st.error("密碼錯誤，無法匯入！")
-        elif legacy_csv is None:
-            st.error("請先選擇 CSV 檔案。")
-        else:
-            try:
-                import_legacy_orders(legacy_csv.getvalue())
-            except (StorageError, ValueError) as error:
-                st.error(str(error))
-            else:
-                st.session_state["import_success"] = True
-                st.rerun()
-if st.session_state.pop("import_success", False):
-    st.success("已完成匯入；同一份檔案內已匯入的紀錄會自動略過。")
-
-if not orders_df.empty:
+def render_order_totals(orders_df):
     has_chen = any("俊丞" in str(name) for name in orders_df["姓名"])
     has_yeh = any("臨恩" in str(name) for name in orders_df["姓名"])
     is_clashing = has_chen and has_yeh
 
-    total_qty = len(orders_df)
+    total_qty = orders_df["份數"].sum()
     total_amount = orders_df["金額"].sum()
     col1, col2 = st.columns(2)
     col1.metric("總訂購件數", f"{total_qty} 份")
@@ -1072,7 +880,7 @@ if not orders_df.empty:
 
     # 1. 店家點餐彙整
     st.markdown("**【店家點餐彙整】**")
-    summary_df = orders_df.groupby(["店家", "餐點"]).size().reset_index(name="數量")
+    summary_df = orders_df.groupby(["店家", "餐點"])["份數"].sum().reset_index(name="數量")
     st.table(summary_df)
 
     # 2. 依人名統計每人應付金額
@@ -1107,7 +915,7 @@ if not orders_df.empty:
         elif "顏寶容" in name_str or "寶容" in name_str:
             name_display = render_player_collie(name_str)
         else:
-            name_display = name_str
+            name_display = escape(name_str)
         
         person_html += f'<tr><td>{name_display}</td><td>${row["應付金額"]} 元</td></tr>'
     person_html += '</tbody></table>'
@@ -1124,7 +932,7 @@ if not orders_df.empty:
         btm_idx_d = max(d_chen_idx, d_yeh_idx)
         st.markdown(generate_dynamic_clash_css("detail", top_idx_d, btm_idx_d, row_height=48), unsafe_allow_html=True)
 
-    detail_html = '<table class="custom-table"><thead><tr><th>店家</th><th>姓名</th><th>餐點</th><th>金額</th><th>備註</th></tr></thead><tbody>'
+    detail_html = '<table class="custom-table"><thead><tr><th>店家</th><th>姓名</th><th>餐點</th><th>份數</th><th>金額</th><th>備註</th></tr></thead><tbody>'
     for idx, row in orders_df.iterrows():
         name_str = str(row["姓名"])
         if is_clashing and d_chen_idx is not None and d_yeh_idx is not None:
@@ -1141,7 +949,7 @@ if not orders_df.empty:
             elif "顏寶容" in name_str or "寶容" in name_str:
                 name_display = render_player_collie(name_str)
             else:
-                name_display = name_str
+                name_display = escape(name_str)
         else:
             if "俊丞" in name_str:
                 name_display = render_player_flame(name_str)
@@ -1150,61 +958,357 @@ if not orders_df.empty:
             elif "顏寶容" in name_str or "寶容" in name_str:
                 name_display = render_player_collie(name_str)
             else:
-                name_display = name_str
+                name_display = escape(name_str)
 
-        detail_html += f'<tr><td>{row["店家"]}</td><td>{name_display}</td><td>{row["餐點"]}</td><td>${row["金額"]}</td><td>{row["備註"]}</td></tr>'
+        detail_html += f'<tr><td>{escape(str(row["店家"]))}</td><td>{name_display}</td><td>{escape(str(row["餐點"]))}</td><td>{row["份數"]}</td><td>${row["金額"]}</td><td>{escape(str(row["備註"]))}</td></tr>'
     detail_html += '</tbody></table>'
     st.markdown(detail_html, unsafe_allow_html=True)
 
-    # --- 刪除特定訂單功能（含密碼保護） ---
-    with st.expander("🛠️ 訂單修改 / 刪除管理（需管理密碼）"):
-        st.write("若點錯餐點，可在此選取並單筆刪除：")
-        
-        order_options = [
-            f"編號 {idx + 1}: 【{row['姓名']}】 {row['餐點']} (${row['金額']}元) - 備註: {row['備註']}"
-            for idx, row in orders_df.iterrows()
-        ]
-        
-        selected_order_to_delete = st.selectbox("選擇要刪除的訂單項目", order_options)
-        del_pwd = st.text_input("輸入管理密碼以確認刪除", type="password", placeholder="請輸入4位數密碼")
-        
-        if st.button("❌ 確認刪除此筆餐點"):
-            if del_pwd == ADMIN_PASSWORD:
-                selected_idx = order_options.index(selected_order_to_delete)
+
+
+def render_shop_notes(shop):
+    if shop == "食材有限":
+        st.caption("涼粉可選酸辣、胡麻、綜合。滷味可選原味、小辣、中辣、大辣，請填在備註。")
+        st.caption("木耳、娃娃菜、杏鮑菇、高麗菜任選兩樣 $50，請備註品項。")
+        st.caption("滷味滿 $100 才提供盒裝。單份未滿 $50，店家另收 $20 拌炒費，請於結帳時核對。")
+
+    if shop == "痴飯吧":
+        st.caption("會議便當 $200～$300，請先向店家確認菜色與價格。")
+        st.caption("3 公里內滿 10 個免費外送。大量訂購請提前來電或私訊預訂。訂購電話 0913-026-253。")
+
+
+TAIPEI = ZoneInfo("Asia/Taipei")
+GROUP_FIELDS = "id,restaurant,created_at,closes_at,closed_at"
+ORDER_FIELDS = "id,group_id,name,items,revision"
+RPC_ERRORS = {
+    "already_open": "已有一團正在收單。",
+    "closed": "這團已停止收單。請重新整理查看最新狀態。",
+    "conflict": "這筆訂單已在另一個頁面更新。請重新開啟專屬連結後再修改。",
+    "invalid": "請確認截止時間、餐點份數與備註。",
+    "unavailable": "找不到這筆訂單，請確認專屬連結。",
+}
+
+
+def rpc(endpoint, **payload):
+    result = database_request("POST", "rpc/" + endpoint, payload)
+    if result != "ok":
+        raise StorageError(RPC_ERRORS.get(result, "資料庫未確認成功，請重新整理後再試。"))
+
+
+def read_rows(query, single=False):
+    rows = []
+    while True:
+        page = database_request("GET", query + ("&limit=1" if single else f"&limit=500&offset={len(rows)}"))
+        if not isinstance(page, list):
+            raise StorageError("資料庫回傳格式有誤。")
+        if single:
+            return next(iter(page), None)
+        rows.extend(page)
+        if len(page) < 500:
+            return rows
+
+
+def get_group(group_id):
+    return read_rows(f"lunch_groups?select={GROUP_FIELDS},menu&id=eq.{group_id}", single=True)
+
+
+def cutoff(group):
+    return datetime.fromisoformat(group["closes_at"]).astimezone(TAIPEI)
+
+
+def is_open(group):
+    return group is not None and group["closed_at"] is None and datetime.now(TAIPEI) < cutoff(group)
+
+
+def new_link():
+    return f"{uuid.uuid4()}.{secrets.token_urlsafe(32)}"
+
+
+def link_parts(link):
+    order_id, _, token = link.partition(".")
+    if not re.fullmatch(r"[A-Za-z0-9_-]{43}", token):
+        raise ValueError
+    return str(uuid.UUID(order_id)), hashlib.sha256(token.encode()).hexdigest()
+
+
+def group_label(group):
+    return f'{cutoff(group):%m/%d %H:%M}｜{group["restaurant"]}'
+
+
+def group_orders(group):
+    columns = ["店家", "姓名", "餐點", "份數", "單價", "金額", "備註"]
+    rows = read_rows(f'lunch_group_orders?select=name,items&group_id=eq.{group["id"]}&order=created_at.asc,id.asc')
+    return pd.DataFrame([
+        {"店家": group["restaurant"], "姓名": order["name"], "餐點": line["dish"],
+         "份數": line["qty"], "單價": line["unit_price"], "金額": line["qty"] * line["unit_price"],
+         "備註": line["notes"]}
+        for order in rows for line in order["items"]
+    ], columns=columns)
+
+
+def admin_panel(group):
+    with st.sidebar:
+        st.header("揪團管理")
+        try:
+            password = st.secrets.get("admin_password", "")
+        except FileNotFoundError:
+            password = ""
+        if not password:
+            st.caption("請在 Streamlit Secrets 設定 admin_password 後使用管理功能。")
+            return False
+        if not st.session_state.get("lunch_admin"):
+            with st.form("admin_login"):
+                entered = st.text_input("管理密碼", type="password")
+                if st.form_submit_button("登入管理"):
+                    if secrets.compare_digest(str(password).encode(), entered.encode()):
+                        st.session_state["lunch_admin"] = True
+                        st.rerun()
+                    st.error("管理密碼錯誤。")
+            return False
+        if st.button("登出管理"):
+            st.session_state.pop("lunch_admin", None)
+            st.rerun()
+        if st.session_state.pop("group_admin_saved", False):
+            st.success("開團設定已儲存。")
+        now = datetime.now(TAIPEI)
+        if group and st.session_state.get("group_open_draft") == group["id"]:
+            st.session_state.pop("group_open_draft")
+        if group and group["closed_at"] is None:
+            st.caption(f'最近一團｜{group_label(group)}')
+            with st.form("lunch_extend_" + group["id"]):
+                default = st.session_state.setdefault(
+                    "extend_default_" + group["id"], max(cutoff(group), now) + timedelta(minutes=15)
+                )
+                day = st.date_input("延長至日期", value=default.date())
+                time = st.time_input("延長至時間", value=default.time())
+                extend = st.form_submit_button("延長截止時間")
+            close = st.button("立即結單")
+            if extend or close:
                 try:
-                    delete_order(orders_df.iloc[selected_idx]["_order_id"])
+                    rpc("lunch_change_group", p_id=group["id"], p_close=close,
+                        p_deadline=datetime.combine(day, time, TAIPEI).isoformat() if extend else None)
                 except StorageError as error:
                     st.error(str(error))
-                    st.stop()
-                st.success("該筆訂單已成功刪除！")
-                st.rerun()
-            else:
-                st.error("密碼錯誤，無法刪除！")
-
-    st.write("")
-    col_btn1, col_btn2 = st.columns(2)
-    with col_btn1:
-        csv_data = orders_df.drop(columns=['_order_id']).to_csv(index=False).encode('utf-8-sig')
-        st.download_button(
-            label="📥 下載今日訂單報表 (CSV)",
-            data=csv_data,
-            file_name=f"午餐訂單_{date.today().strftime('%Y%m%d')}.csv",
-            mime="text/csv"
-        )
-    with col_btn2:
-        with st.popover("🗑️ 清空所有訂單（重新開團）"):
-            st.write("⚠️ 此動作會清空今日所有點餐資料！")
-            clear_pwd = st.text_input("請輸入管理密碼確認清空", type="password", key="clear_all_pwd")
-            if st.button("確認全數清空"):
-                if clear_pwd == ADMIN_PASSWORD:
+                else:
+                    st.session_state.pop("extend_default_" + group["id"], None)
+                    st.session_state["group_admin_saved"] = True
+                    st.rerun()
+        if not is_open(group):
+            with st.form("lunch_open_group"):
+                shop = st.selectbox("開團店家", list(RESTAURANT_MENUS))
+                default = st.session_state.setdefault("open_default", now + timedelta(hours=1))
+                day = st.date_input("截止日期", value=default.date())
+                time = st.time_input("截止時間", value=default.time())
+                if st.form_submit_button("開團", type="primary"):
+                    draft_id = st.session_state.setdefault("group_open_draft", str(uuid.uuid4()))
                     try:
-                        clear_orders(orders_df["_order_id"].tolist())
+                        rpc("lunch_create_group", p_id=draft_id, p_restaurant=shop, p_menu=RESTAURANT_MENUS[shop],
+                            p_deadline=datetime.combine(day, time, TAIPEI).isoformat())
                     except StorageError as error:
                         st.error(str(error))
-                        st.stop()
-                    st.success("已清空所有訂單！")
-                    st.rerun()
+                    else:
+                        st.session_state.pop("group_open_draft", None)
+                        st.session_state.pop("open_default", None)
+                        st.session_state["group_admin_saved"] = True
+                        st.rerun()
+        return True
+
+
+def order_editor(group, link, order=None):
+    order_id, token_hash = link_parts(link)
+    revision = order["revision"] if order else 0
+    prefix = f"order_{order_id}_{revision}"
+    if order:
+        name = order["name"]
+    else:
+        member = st.selectbox("選擇點餐人員", MEMBERS, index=None, key=prefix + "_member")
+        name = st.text_input("姓名／暱稱", max_chars=80, key=prefix + "_name") if member == MEMBERS[-1] else member
+
+    menu = group["menu"]
+    preferred = RESTAURANT_MENUS.get(group["restaurant"], {})
+    dishes = list(dict.fromkeys([dish for dish in preferred if dish in menu] + list(menu)))
+    defaults = order["items"] if order else []
+    count_key = prefix + "_count"
+    count = st.session_state.setdefault(count_key, max(len(defaults), 1))
+    items = []
+    for index in range(count):
+        saved = defaults[index] if index < len(defaults) else {}
+        item_key = f"{prefix}_{index}"
+        left, right = st.columns([3, 1])
+        dish = left.selectbox(
+            f"第 {index + 1} 項餐點", dishes,
+            index=dishes.index(saved["dish"]) if saved else None,
+            format_func=lambda value: f"{value}（NT$ {menu[value]}）", key=item_key + "_dish",
+        )
+        qty = right.number_input(f"第 {index + 1} 項份數", min_value=1, max_value=99,
+                                 value=saved.get("qty", 1), key=item_key + "_qty")
+        note = st.text_input(f"第 {index + 1} 項備註", value=saved.get("notes", ""),
+                             max_chars=150, key=item_key + "_note")
+        if dish:
+            items.append({"dish": dish, "qty": qty, "notes": note.strip()})
+    if count < 20 and st.button("＋ 新增一項餐點", key=prefix + "_add"):
+        st.session_state[count_key] += 1
+        st.rerun()
+    st.caption("同款餐點有不同口味時，可以加一項再選一次。清空餐點選擇可移除該項。")
+    total = sum(menu[line["dish"]] * line["qty"] for line in items)
+    st.write(f"**餐點小計 NT$ {total:,}**")
+    if st.button("儲存修改" if order else "送出訂單", type="primary", key=prefix + "_save"):
+        if not name or not name.strip() or not items:
+            st.error("請填寫姓名並至少選一項餐點。")
+            return
+        try:
+            rpc("lunch_save_group_order", p_group=group["id"], p_order=order_id, p_hash=token_hash,
+                p_name=name.strip(), p_items=items, p_revision=revision)
+        except StorageError as error:
+            if not order:
+                st.session_state["pending_order_link"] = link
+            st.error(str(error))
+            return
+        st.session_state["order_saved"] = "修改已儲存。" if order else "已收到你的訂單。"
+        if not order:
+            st.session_state.pop("pending_order_link", None)
+            st.session_state.pop("draft_" + group["id"], None)
+            st.session_state["last_order_link"] = link
+            st.query_params["order"] = link
+        st.rerun()
+
+
+def show_my_order(link):
+    st.subheader("我的訂單")
+    if st.button("返回今日點餐"):
+        del st.query_params["order"]
+        st.rerun()
+    try:
+        order_id, token_hash = link_parts(link)
+    except ValueError:
+        st.warning("專屬連結格式有誤。")
+        return
+    order = read_rows(
+        f"lunch_group_orders?select={ORDER_FIELDS}&id=eq.{order_id}&edit_hash=eq.{token_hash}", single=True)
+    if order is None:
+        st.warning("找不到這筆訂單，請確認使用的是完整的專屬連結。")
+        return
+    group = get_group(order["group_id"])
+    if not group:
+        st.warning("這筆訂單的開團資料無法讀取。")
+        return
+    st.session_state["last_order_link"] = link
+    if st.session_state.get("pending_order_link") == link:
+        st.session_state.pop("pending_order_link")
+        st.session_state.pop("draft_" + group["id"], None)
+    if message := st.session_state.pop("order_saved", None):
+        st.success(message)
+    st.write(f'**{order["name"]}｜{group["restaurant"]}**')
+    st.caption("請保留目前網址。持有這個專屬連結的人可以查看訂單，並在截止前修改。")
+    st.table(pd.DataFrame([
+        {"餐點": line["dish"], "份數": line["qty"],
+         "金額": line["unit_price"] * line["qty"], "備註": line["notes"]}
+        for line in order["items"]
+    ]))
+    total = sum(line["unit_price"] * line["qty"] for line in order["items"])
+    st.write(f"**應付 NT$ {total:,}**")
+    if is_open(group):
+        with st.expander(f"修改訂單（{cutoff(group):%m/%d %H:%M} 截止）"):
+            order_editor(group, link, order)
+    else:
+        st.info("這團已截止，現在可以查看訂單。")
+
+
+def render_group_results(group):
+    orders = group_orders(group)
+    if orders.empty:
+        st.info("這團目前沒有訂單。")
+        return
+    render_order_totals(orders)
+    st.download_button("下載本團訂單 CSV", orders.to_csv(index=False).encode("utf-8-sig"),
+                       file_name=f'午餐訂單_{cutoff(group):%Y%m%d_%H%M}.csv', mime="text/csv")
+
+
+def render_legacy_orders(admin):
+    orders = load_orders()
+    if admin:
+        with st.expander("匯入舊訂單 CSV"):
+            uploaded = st.file_uploader("選擇舊訂單報表", type=["csv"])
+            if st.button("匯入舊訂單"):
+                if uploaded is None:
+                    st.error("請先選擇 CSV 檔案。")
                 else:
-                    st.error("密碼錯誤！")
-else:
-    st.info("目前還沒有任何人點餐，快當第一個！")
+                    try:
+                        import_legacy_orders(uploaded.getvalue())
+                    except ValueError as error:
+                        st.error(str(error))
+                    else:
+                        st.session_state["legacy_imported"] = True
+                        st.rerun()
+    if st.session_state.pop("legacy_imported", False):
+        st.success("舊訂單已匯入。")
+    if orders.empty:
+        st.info("目前沒有舊版訂單。")
+        return
+    render_order_totals(orders.assign(份數=1))
+    st.download_button("下載舊版訂單 CSV", orders.drop(columns=["_order_id"]).to_csv(index=False).encode("utf-8-sig"),
+                       file_name="舊版午餐訂單.csv", mime="text/csv")
+    if admin:
+        with st.expander("刪除指定的舊訂單"):
+            labels = {
+                row["_order_id"]: f'{index + 1}. {row["姓名"]}｜{row["餐點"]}｜{row["備註"]}'
+                for index, row in orders.iterrows()
+            }
+            selected = st.selectbox("舊訂單", list(labels), index=None, format_func=labels.__getitem__)
+            if selected and st.button("刪除這筆舊訂單"):
+                delete_order(selected)
+                st.rerun()
+
+
+def main():
+    link = st.query_params.get("order")
+    if link is not None:
+        show_my_order(link)
+        return
+    group_query = f"lunch_groups?select={GROUP_FIELDS}&order=created_at.desc,id.desc"
+    group = read_rows(group_query, single=True)
+    admin = admin_panel(group)
+    page = st.radio("功能", ["今日點餐", "本團統計", "歷史紀錄"], horizontal=True, label_visibility="collapsed")
+    if page == "歷史紀錄":
+        groups = {entry["id"]: entry for entry in read_rows(group_query)}
+        selection = st.selectbox(
+            "選擇開團紀錄", ["legacy", *groups],
+            format_func=lambda key: "舊版訂單" if key == "legacy" else group_label(groups[key]),
+            index=1 if groups else 0,
+        )
+        if selection == "legacy":
+            render_legacy_orders(admin)
+        else:
+            render_group_results(groups[selection])
+        return
+
+    if pending := st.session_state.get("pending_order_link"):
+        if st.button("查詢剛送出的訂單"):
+            st.query_params["order"] = pending
+            st.rerun()
+    if st.session_state.get("last_order_link") and st.button("查看我的上一筆訂單"):
+        st.query_params["order"] = st.session_state["last_order_link"]
+        st.rerun()
+    if group is None:
+        st.info("目前尚未開團。")
+        return
+    st.subheader(group["restaurant"])
+    status = "收單中" if is_open(group) else "已截止"
+    stop = datetime.fromisoformat(group["closed_at"]).astimezone(TAIPEI) if group["closed_at"] else cutoff(group)
+    st.caption(f"{status}｜{stop:%m/%d %H:%M} 截止（台灣時間）")
+    if page == "本團統計":
+        render_group_results(group)
+    elif is_open(group):
+        active = get_group(group["id"])
+        if not is_open(active):
+            st.info("這團剛停止收單，請重新整理查看最新狀態。")
+            return
+        render_shop_notes(group["restaurant"])
+        link = st.session_state.setdefault("draft_" + group["id"], new_link())
+        order_editor(active, link)
+
+
+try:
+    main()
+except StorageError as error:
+    st.error(str(error))
