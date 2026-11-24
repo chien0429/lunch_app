@@ -1035,9 +1035,8 @@ def group_label(group):
     return f'{cutoff(group):%m/%d %H:%M}｜{group["restaurant"]}'
 
 
-def group_orders(group):
+def group_orders(group, rows):
     columns = ["店家", "姓名", "餐點", "份數", "單價", "金額", "備註"]
-    rows = read_rows(f'lunch_group_orders?select=name,items&group_id=eq.{group["id"]}&order=created_at.asc,id.asc')
     return pd.DataFrame([
         {"店家": group["restaurant"], "姓名": order["name"], "餐點": line["dish"],
          "份數": line["qty"], "單價": line["unit_price"], "金額": line["qty"] * line["unit_price"],
@@ -1114,10 +1113,33 @@ def admin_panel(group):
         return True
 
 
-def order_editor(group, link, order=None):
-    order_id, token_hash = link_parts(link)
+def update_order_as_admin(group, order, items):
+    if not st.session_state.get("lunch_admin"):
+        raise StorageError("請先登入揪團管理。")
+    order_id = str(uuid.UUID(order["id"]))
+    group_id = str(uuid.UUID(group["id"]))
+    revision = int(order["revision"])
+    saved_items = [dict(line, unit_price=group["menu"][line["dish"]]) for line in items]
+    changed = database_request(
+        "PATCH",
+        f"lunch_group_orders?id=eq.{order_id}&group_id=eq.{group_id}&revision=eq.{revision}&select=id",
+        {"items": saved_items, "revision": revision + 1},
+        prefer="return=representation",
+    )
+    if changed == []:
+        raise StorageError(RPC_ERRORS["conflict"])
+    if changed != [{"id": order_id}]:
+        raise StorageError("資料庫未確認修改成功，請重新整理並核對訂單。")
+
+
+def order_editor(group, link=None, order=None, *, admin=False):
+    if admin:
+        order_id = order["id"]
+    else:
+        order_id, token_hash = link_parts(link)
     revision = order["revision"] if order else 0
-    prefix = f"order_{order_id}_{revision}"
+    mode = "admin" if admin else "customer"
+    prefix = f"order_{mode}_{order_id}_{revision}"
     if order:
         name = order["name"]
     else:
@@ -1157,13 +1179,19 @@ def order_editor(group, link, order=None):
             st.error("請填寫姓名並至少選一項餐點。")
             return
         try:
-            rpc("lunch_save_group_order", p_group=group["id"], p_order=order_id, p_hash=token_hash,
-                p_name=name.strip(), p_items=items, p_revision=revision)
+            if admin:
+                update_order_as_admin(group, order, items)
+            else:
+                rpc("lunch_save_group_order", p_group=group["id"], p_order=order_id, p_hash=token_hash,
+                    p_name=name.strip(), p_items=items, p_revision=revision)
         except StorageError as error:
             if not order:
                 st.session_state["pending_order_link"] = link
             st.error(str(error))
             return
+        if admin:
+            st.session_state["admin_order_saved"] = group["id"]
+            st.rerun()
         st.session_state["order_saved"] = "修改已儲存。" if order else "已收到你的訂單。"
         if not order:
             st.session_state.pop("pending_order_link", None)
@@ -1214,11 +1242,40 @@ def show_my_order(link):
         st.info("這團已截止，現在可以查看訂單。")
 
 
-def render_group_results(group):
-    orders = group_orders(group)
+def render_group_results(group, admin):
+    fields = ORDER_FIELDS if admin else "name,items"
+    rows = read_rows(
+        f'lunch_group_orders?select={fields}&group_id=eq.{group["id"]}&order=created_at.asc,id.asc'
+    )
+    orders = group_orders(group, rows)
     if orders.empty:
         st.info("這團目前沒有訂單。")
         return
+    if admin:
+        if st.session_state.get("admin_order_saved") == group["id"]:
+            st.session_state.pop("admin_order_saved")
+            st.success("訂單修改已儲存。")
+        with st.expander("管理員修改訂單"):
+            by_id = {order["id"]: order for order in rows}
+            labels = {
+                order["id"]: (
+                    f'{index}. {order["name"]}｜'
+                    + "、".join(f'{item["dish"]} × {item["qty"]}' for item in order["items"])
+                )
+                for index, order in enumerate(rows, 1)
+            }
+            selected = st.selectbox(
+                "選擇要修改的訂單", list(by_id), index=None, format_func=labels.__getitem__,
+                key="admin_order_picker_" + group["id"],
+            )
+            if selected:
+                if not is_open(group):
+                    st.caption("這團已結單。若已向店家下單，請同步通知店家。")
+                group_with_menu = get_group(group["id"])
+                if group_with_menu:
+                    order_editor(group_with_menu, order=by_id[selected], admin=True)
+                else:
+                    st.warning("無法讀取本團菜單，請重新整理後再試。")
     render_order_totals(orders)
     st.download_button("下載本團訂單 CSV", orders.to_csv(index=False).encode("utf-8-sig"),
                        file_name=f'午餐訂單_{cutoff(group):%Y%m%d_%H%M}.csv', mime="text/csv")
@@ -1279,7 +1336,7 @@ def main():
         if selection == "legacy":
             render_legacy_orders(admin)
         else:
-            render_group_results(groups[selection])
+            render_group_results(groups[selection], admin)
         return
 
     if pending := st.session_state.get("pending_order_link"):
@@ -1297,7 +1354,7 @@ def main():
     stop = datetime.fromisoformat(group["closed_at"]).astimezone(TAIPEI) if group["closed_at"] else cutoff(group)
     st.caption(f"{status}｜{stop:%m/%d %H:%M} 截止（台灣時間）")
     if page == "本團統計":
-        render_group_results(group)
+        render_group_results(group, admin)
     elif is_open(group):
         active = get_group(group["id"])
         if not is_open(active):
